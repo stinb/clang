@@ -666,7 +666,7 @@ const FileEntry *Preprocessor::LookupFile(
     const DirectoryLookup *&CurDir, SmallVectorImpl<char> *SearchPath,
     SmallVectorImpl<char> *RelativePath,
     ModuleMap::KnownHeader *SuggestedModule, bool *IsMapped,
-    bool *IsFrameworkFound, bool SkipCache) {
+    bool *IsFrameworkFound) {
   Module *RequestingModule = getModuleForLocation(FilenameLoc);
   bool RequestingModuleIsModuleInterface = !SourceMgr.isInMainFile(FilenameLoc);
 
@@ -742,7 +742,7 @@ const FileEntry *Preprocessor::LookupFile(
   const FileEntry *FE = HeaderInfo.LookupFile(
       Filename, FilenameLoc, isAngled, FromDir, CurDir, Includers, SearchPath,
       RelativePath, RequestingModule, SuggestedModule, IsMapped,
-      IsFrameworkFound, SkipCache, BuildSystemModule);
+      IsFrameworkFound, BuildSystemModule);
   if (FE) {
     if (SuggestedModule && !LangOpts.AsmPreprocessor)
       HeaderInfo.getModuleMap().diagnoseHeaderInclusion(
@@ -1785,24 +1785,11 @@ void Preprocessor::HandleIncludeDirective(SourceLocation HashLoc,
     if (Callbacks) {
       // Give the clients a chance to recover.
       SmallString<128> RecoveryPath;
-      if (Callbacks->FileNotFound(HashLoc, Filename, RecoveryPath)) {
-        if (const DirectoryEntry *DE = FileMgr.getDirectory(RecoveryPath)) {
-          // Add the recovery path to the list of search paths.
-          DirectoryLookup DL(DE, SrcMgr::C_User, false);
-          HeaderInfo.AddSearchPath(DL, isAngled);
-
-          // Try the lookup again, skipping the cache.
-          File = LookupFile(
-              FilenameLoc,
-              LangOpts.MSVCCompat ? NormalizedPath.c_str() : Filename, isAngled,
-              LookupFrom, LookupFromFile, CurDir, nullptr, nullptr,
-              &SuggestedModule, &IsMapped, /*IsFrameworkFound=*/nullptr,
-              /*SkipCache*/ true);
-        }
-      }
+      if (Callbacks->FileNotFound(HashLoc, Filename, RecoveryPath))
+        File = FileMgr.getFile(RecoveryPath, /*openFile=*/true);
     }
 
-    if (!SuppressIncludeNotFoundError) {
+    if (!File && !SuppressIncludeNotFoundError) {
       // If the file could not be located and it was included via angle
       // brackets, we can attempt a lookup as though it were a quoted path to
       // provide the user with a possible fixit.
