@@ -1494,7 +1494,7 @@ void Preprocessor::HandleIncludeDirective(SourceLocation HashLoc,
     if (!File) {
       // Give the clients a chance to recover.
       SmallString<128> RecoveryPath;
-      if (Callbacks->FileNotFound(Filename, RecoveryPath)) {
+      if (Callbacks->FileNotFound(HashLoc, Filename, RecoveryPath)) {
         if (const DirectoryEntry *DE = FileMgr.getDirectory(RecoveryPath)) {
           // Add the recovery path to the list of search paths.
           DirectoryLookup DL(DE, SrcMgr::C_User, false);

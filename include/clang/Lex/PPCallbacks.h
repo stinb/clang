@@ -66,6 +66,9 @@ public:
   /// \brief Callback invoked whenever an inclusion directive results in a
   /// file-not-found error.
   ///
+  /// \param HashLoc The location of the '#' that starts the inclusion 
+  /// directive.
+  ///
   /// \param FileName The name of the file being included, as written in the 
   /// source code.
   ///
@@ -75,7 +78,7 @@ public:
   ///
   /// \returns true to indicate that the preprocessor should attempt to recover
   /// by adding \p RecoveryPath as a header search path.
-  virtual bool FileNotFound(StringRef FileName,
+  virtual bool FileNotFound(SourceLocation HashLoc, StringRef FileName,
                             SmallVectorImpl<char> &RecoveryPath) {
     return false;
   }
@@ -314,6 +317,10 @@ public:
   /// \param IfLoc the source location of the \#if/\#ifdef/\#ifndef directive.
   virtual void Endif(SourceLocation Loc, SourceLocation IfLoc) {
   }
+
+  /// Lex -- Called whenever a new token is lexed.
+  virtual void Lex(const Token &Tok) {
+  }
 };
 
 /// \brief Simple wrapper class for chaining callbacks.
@@ -343,10 +350,10 @@ public:
     Second->FileSkipped(ParentFile, FilenameTok, FileType);
   }
 
-  virtual bool FileNotFound(StringRef FileName,
+  virtual bool FileNotFound(SourceLocation HashLoc, StringRef FileName,
                             SmallVectorImpl<char> &RecoveryPath) {
-    return First->FileNotFound(FileName, RecoveryPath) ||
-           Second->FileNotFound(FileName, RecoveryPath);
+    return First->FileNotFound(HashLoc, FileName, RecoveryPath) ||
+           Second->FileNotFound(HashLoc, FileName, RecoveryPath);
   }
 
   virtual void InclusionDirective(SourceLocation HashLoc,

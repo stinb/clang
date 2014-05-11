@@ -730,6 +730,9 @@ void Preprocessor::Lex(Token &Result) {
     }
   } while (!ReturnedToken);
 
+  if (Callbacks)
+    Callbacks->Lex(Result);
+
   LastTokenWasAt = Result.is(tok::at);
 }
 
