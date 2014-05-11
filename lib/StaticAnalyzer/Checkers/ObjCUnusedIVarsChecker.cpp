@@ -111,7 +111,7 @@ static void Scan(IvarUsageMap &M, const DeclContext *C, const FileID FID,
 }
 
 static void checkObjCUnusedIvar(const ObjCImplementationDecl *D,
-                                BugReporter &BR) {
+                                BugReporter &BR, StringRef Checker) {
 
   const ObjCInterfaceDecl *ID = D->getClassInterface();
   IvarUsageMap M;
@@ -173,7 +173,7 @@ static void checkObjCUnusedIvar(const ObjCImplementationDecl *D,
       PathDiagnosticLocation L =
         PathDiagnosticLocation::create(I->first, BR.getSourceManager());
       BR.EmitBasicReport(D, "Unused instance variable", "Optimization",
-                         os.str(), L);
+                         Checker, os.str(), L);
     }
 }
 
@@ -187,11 +187,11 @@ class ObjCUnusedIvarsChecker : public Checker<
 public:
   void checkASTDecl(const ObjCImplementationDecl *D, AnalysisManager& mgr,
                     BugReporter &BR) const {
-    checkObjCUnusedIvar(D, BR);
+    checkObjCUnusedIvar(D, BR, getTagDescription());
   }
 };
 }
 
-void ento::registerObjCUnusedIvarsChecker(CheckerManager &mgr) {
-  mgr.registerChecker<ObjCUnusedIvarsChecker>();
+void ento::registerObjCUnusedIvarsChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<ObjCUnusedIvarsChecker>(Name);
 }

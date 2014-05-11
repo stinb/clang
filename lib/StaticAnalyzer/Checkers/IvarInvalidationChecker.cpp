@@ -212,12 +212,14 @@ class IvarInvalidationCheckerImpl {
   BugReporter &BR;
   /// Filter on the checks performed.
   const ChecksFilter &Filter;
+  StringRef Checker;
 
 public:
   IvarInvalidationCheckerImpl(AnalysisManager& InMgr,
                               BugReporter &InBR,
-                              const ChecksFilter &InFilter) :
-    Mgr (InMgr), BR(InBR), Filter(InFilter) {}
+                              const ChecksFilter &InFilter,
+                              StringRef Checker) :
+    Mgr (InMgr), BR(InBR), Filter(InFilter), Checker(Checker) {}
 
   void visit(const ObjCImplementationDecl *D) const;
 };
@@ -558,7 +560,7 @@ reportNoInvalidationMethod(const ObjCIvarDecl *FirstIvarDecl,
     PathDiagnosticLocation::createBegin(FirstIvarDecl, BR.getSourceManager());
 
   BR.EmitBasicReport(FirstIvarDecl, "Incomplete invalidation",
-                     categories::CoreFoundationObjectiveC, os.str(),
+                     categories::CoreFoundationObjectiveC, Checker, os.str(),
                      IvarDecLocation);
 }
 
@@ -576,11 +578,11 @@ reportIvarNeedsInvalidation(const ObjCIvarDecl *IvarD,
                            BR.getSourceManager(),
                            Mgr.getAnalysisDeclContext(MethodD));
     BR.EmitBasicReport(MethodD, "Incomplete invalidation",
-                       categories::CoreFoundationObjectiveC, os.str(),
+                       categories::CoreFoundationObjectiveC, Checker, os.str(),
                        MethodDecLocation);
   } else {
     BR.EmitBasicReport(IvarD, "Incomplete invalidation",
-                       categories::CoreFoundationObjectiveC, os.str(),
+                       categories::CoreFoundationObjectiveC, Checker, os.str(),
                        PathDiagnosticLocation::createBegin(IvarD,
                                                         BR.getSourceManager()));
                        
@@ -744,15 +746,15 @@ public:
 public:
   void checkASTDecl(const ObjCImplementationDecl *D, AnalysisManager& Mgr,
                     BugReporter &BR) const {
-    IvarInvalidationCheckerImpl Walker(Mgr, BR, Filter);
+    IvarInvalidationCheckerImpl Walker(Mgr, BR, Filter, getTagDescription());
     Walker.visit(D);
   }
 };
 }
 
 #define REGISTER_CHECKER(name) \
-void ento::register##name(CheckerManager &mgr) {\
-  mgr.registerChecker<IvarInvalidationChecker>()->Filter.check_##name = true;\
+void ento::register##name(CheckerManager &mgr, StringRef Name) {\
+  mgr.registerChecker<IvarInvalidationChecker>(Name)->Filter.check_##name = true;\
 }
 
 REGISTER_CHECKER(InstanceVariableInvalidation)

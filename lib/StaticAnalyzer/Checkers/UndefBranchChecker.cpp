@@ -68,7 +68,8 @@ void UndefBranchChecker::checkBranchCondition(const Stmt *Condition,
     if (N) {
       if (!BT)
         BT.reset(
-               new BuiltinBug("Branch condition evaluates to a garbage value"));
+               new BuiltinBug("Branch condition evaluates to a garbage value",
+                              getTagDescription()));
 
       // What's going on here: we want to highlight the subexpression of the
       // condition that is the most likely source of the "uninitialized
@@ -107,6 +108,6 @@ void UndefBranchChecker::checkBranchCondition(const Stmt *Condition,
   }
 }
 
-void ento::registerUndefBranchChecker(CheckerManager &mgr) {
-  mgr.registerChecker<UndefBranchChecker>();
+void ento::registerUndefBranchChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<UndefBranchChecker>(Name);
 }

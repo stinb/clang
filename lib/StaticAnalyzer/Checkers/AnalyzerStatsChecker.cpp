@@ -113,7 +113,8 @@ void AnalyzerStatsChecker::checkEndAnalysis(ExplodedGraph &G,
       << (Eng.hasEmptyWorkList() ? "yes" : "no");
 
   B.EmitBasicReport(D, "Analyzer Statistics", "Internal Statistics",
-                    output.str(), PathDiagnosticLocation(D, SM));
+                    getTagDescription(), output.str(),
+                    PathDiagnosticLocation(D, SM));
 
   // Emit warning for each block we bailed out on.
   typedef CoreEngine::BlocksExhausted::const_iterator ExhaustedIterator;
@@ -129,12 +130,13 @@ void AnalyzerStatsChecker::checkEndAnalysis(ExplodedGraph &G,
       outputI << "(" << NameOfRootFunction << ")" <<
                  ": The analyzer generated a sink at this point";
       B.EmitBasicReport(
-          D, "Sink Point", "Internal Statistics", outputI.str(),
+          D, "Sink Point", "Internal Statistics", getTagDescription(),
+          outputI.str(),
           PathDiagnosticLocation::createBegin(CS->getStmt(), SM, LC));
     }
   }
 }
 
-void ento::registerAnalyzerStatsChecker(CheckerManager &mgr) {
-  mgr.registerChecker<AnalyzerStatsChecker>();
+void ento::registerAnalyzerStatsChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<AnalyzerStatsChecker>(Name);
 }

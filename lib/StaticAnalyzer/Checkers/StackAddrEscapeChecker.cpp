@@ -101,7 +101,8 @@ void StackAddrEscapeChecker::EmitStackError(CheckerContext &C, const MemRegion *
 
   if (!BT_returnstack)
    BT_returnstack.reset(
-                 new BuiltinBug("Return of address to stack-allocated memory"));
+                 new BuiltinBug("Return of address to stack-allocated memory",
+                                getTagDescription()));
 
   // Generate a report for this bug.
   SmallString<512> buf;
@@ -220,7 +221,8 @@ void StackAddrEscapeChecker::checkEndFunction(CheckerContext &Ctx) const {
       new BuiltinBug("Stack address stored into global variable",
                      "Stack address was saved into a global variable. "
                      "This is dangerous because the address will become "
-                     "invalid after returning from the function"));
+                     "invalid after returning from the function",
+                     getTagDescription()));
   
   for (unsigned i = 0, e = cb.V.size(); i != e; ++i) {
     // Generate a report for this bug.
@@ -239,6 +241,6 @@ void StackAddrEscapeChecker::checkEndFunction(CheckerContext &Ctx) const {
   }
 }
 
-void ento::registerStackAddrEscapeChecker(CheckerManager &mgr) {
-  mgr.registerChecker<StackAddrEscapeChecker>();
+void ento::registerStackAddrEscapeChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<StackAddrEscapeChecker>(Name);
 }

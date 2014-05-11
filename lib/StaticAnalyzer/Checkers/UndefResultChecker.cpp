@@ -55,7 +55,8 @@ void UndefResultChecker::checkPostStmt(const BinaryOperator *B,
       return;
     
     if (!BT)
-      BT.reset(new BuiltinBug("Result of operation is garbage or undefined"));
+      BT.reset(new BuiltinBug("Result of operation is garbage or undefined",
+                              getTagDescription()));
 
     SmallString<256> sbuf;
     llvm::raw_svector_ostream OS(sbuf);
@@ -95,6 +96,6 @@ void UndefResultChecker::checkPostStmt(const BinaryOperator *B,
   }
 }
 
-void ento::registerUndefResultChecker(CheckerManager &mgr) {
-  mgr.registerChecker<UndefResultChecker>();
+void ento::registerUndefResultChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<UndefResultChecker>(Name);
 }

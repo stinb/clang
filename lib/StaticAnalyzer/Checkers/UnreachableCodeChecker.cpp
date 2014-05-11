@@ -165,7 +165,7 @@ void UnreachableCodeChecker::checkEndAnalysis(ExplodedGraph &G,
     if (SM.isInSystemHeader(SL) || SM.isInExternCSystemHeader(SL))
       continue;
 
-    B.EmitBasicReport(D, "Unreachable code", "Dead code",
+    B.EmitBasicReport(D, "Unreachable code", "Dead code", getTagDescription(),
                       "This statement is never executed", DL, SR);
   }
 }
@@ -245,6 +245,6 @@ bool UnreachableCodeChecker::isEmptyCFGBlock(const CFGBlock *CB) {
       && CB->getTerminator() == 0; // No terminator
 }
 
-void ento::registerUnreachableCodeChecker(CheckerManager &mgr) {
-  mgr.registerChecker<UnreachableCodeChecker>();
+void ento::registerUnreachableCodeChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<UnreachableCodeChecker>(Name);
 }

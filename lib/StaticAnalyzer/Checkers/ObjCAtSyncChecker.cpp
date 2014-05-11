@@ -46,7 +46,7 @@ void ObjCAtSyncChecker::checkPreStmt(const ObjCAtSynchronizedStmt *S,
     if (ExplodedNode *N = C.generateSink()) {
       if (!BT_undef)
         BT_undef.reset(new BuiltinBug("Uninitialized value used as mutex "
-                                  "for @synchronized"));
+                                  "for @synchronized", getTagDescription()));
       BugReport *report =
         new BugReport(*BT_undef, BT_undef->getDescription(), N);
       bugreporter::trackNullOrUndefValue(N, Ex, *report);
@@ -69,7 +69,8 @@ void ObjCAtSyncChecker::checkPreStmt(const ObjCAtSynchronizedStmt *S,
       if (ExplodedNode *N = C.addTransition(nullState)) {
         if (!BT_null)
           BT_null.reset(new BuiltinBug("Nil value used as mutex for @synchronized() "
-                                   "(no synchronization will occur)"));
+                                   "(no synchronization will occur)",
+                                   getTagDescription()));
         BugReport *report =
           new BugReport(*BT_null, BT_null->getDescription(), N);
         bugreporter::trackNullOrUndefValue(N, Ex, *report);
@@ -87,7 +88,7 @@ void ObjCAtSyncChecker::checkPreStmt(const ObjCAtSynchronizedStmt *S,
     C.addTransition(notNullState);
 }
 
-void ento::registerObjCAtSyncChecker(CheckerManager &mgr) {
+void ento::registerObjCAtSyncChecker(CheckerManager &mgr, StringRef Name) {
   if (mgr.getLangOpts().ObjC2)
-    mgr.registerChecker<ObjCAtSyncChecker>();
+    mgr.registerChecker<ObjCAtSyncChecker>(Name);
 }

@@ -109,6 +109,7 @@ PathDiagnostic::~PathDiagnostic() {}
 PathDiagnostic::PathDiagnostic(const Decl *declWithIssue,
                                StringRef bugtype, StringRef verboseDesc,
                                StringRef shortDesc, StringRef category,
+                               StringRef Checker,
                                PathDiagnosticLocation LocationToUnique,
                                const Decl *DeclToUnique)
   : DeclWithIssue(declWithIssue),
@@ -116,6 +117,7 @@ PathDiagnostic::PathDiagnostic(const Decl *declWithIssue,
     VerboseDesc(StripTrailingDots(verboseDesc)),
     ShortDesc(StripTrailingDots(shortDesc)),
     Category(StripTrailingDots(category)),
+    Checker(StripTrailingDots(Checker)),
     UniqueingLoc(LocationToUnique),
     UniqueingDecl(DeclToUnique),
     path(pathImpl) {}

@@ -106,7 +106,7 @@ void CheckerRegistry::initializeManager(CheckerManager &checkerMgr,
   // Initialize the CheckerManager with all enabled checkers.
   for (CheckerInfoSet::iterator
          i = enabledCheckers.begin(), e = enabledCheckers.end(); i != e; ++i) {
-    (*i)->Initialize(checkerMgr);
+    (*i)->Initialize(checkerMgr, (*i)->FullName);
   }
 }
 

@@ -28,6 +28,7 @@ namespace {
 class WalkAST : public StmtVisitor<WalkAST> {
   BugReporter &BR;
   AnalysisDeclContext* AC;
+  StringRef Checker;
   ASTContext &ASTC;
   uint64_t PtrWidth;
 
@@ -71,8 +72,8 @@ class WalkAST : public StmtVisitor<WalkAST> {
   }
 
 public:
-  WalkAST(BugReporter &br, AnalysisDeclContext* ac)
-  : BR(br), AC(ac), ASTC(AC->getASTContext()),
+  WalkAST(BugReporter &br, AnalysisDeclContext* ac, StringRef Checker)
+  : BR(br), AC(ac), Checker(Checker), ASTC(AC->getASTContext()),
     PtrWidth(ASTC.getTargetInfo().getPointerWidth(0)) {}
 
   // Statement visitor methods.
@@ -144,7 +145,7 @@ void WalkAST::VisitCallExpr(CallExpr *CE) {
         PathDiagnosticLocation::createBegin(CE, BR.getSourceManager(), AC);
     BR.EmitBasicReport(AC->getDecl(),
                        OsName.str(), categories::CoreFoundationObjectiveC,
-                       Os.str(), CELoc, Arg->getSourceRange());
+                       Checker, Os.str(), CELoc, Arg->getSourceRange());
   }
 
   // Recurse and check children.
@@ -163,12 +164,12 @@ public:
 
   void checkASTCodeBody(const Decl *D, AnalysisManager& Mgr,
                         BugReporter &BR) const {
-    WalkAST walker(BR, Mgr.getAnalysisDeclContext(D));
+    WalkAST walker(BR, Mgr.getAnalysisDeclContext(D), getTagDescription());
     walker.Visit(D->getBody());
   }
 };
 }
 
-void ento::registerObjCContainersASTChecker(CheckerManager &mgr) {
-  mgr.registerChecker<ObjCContainersASTChecker>();
+void ento::registerObjCContainersASTChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<ObjCContainersASTChecker>(Name);
 }

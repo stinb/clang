@@ -213,7 +213,7 @@ void ObjCSuperCallChecker::checkASTDecl(const ObjCImplementationDecl *D,
            << *D << "' is missing a [super " << S.getAsString() << "] call";
 
         BR.EmitBasicReport(MD, Name, categories::CoreFoundationObjectiveC,
-                           os.str(), DLoc);
+                           getTagDescription(), os.str(), DLoc);
       }
     }
   }
@@ -224,8 +224,8 @@ void ObjCSuperCallChecker::checkASTDecl(const ObjCImplementationDecl *D,
 // Check registration.
 //===----------------------------------------------------------------------===//
 
-void ento::registerObjCSuperCallChecker(CheckerManager &Mgr) {
-  Mgr.registerChecker<ObjCSuperCallChecker>();
+void ento::registerObjCSuperCallChecker(CheckerManager &Mgr, StringRef Name) {
+  Mgr.registerChecker<ObjCSuperCallChecker>(Name);
 }
 
 

@@ -64,12 +64,14 @@ class DirectIvarAssignment :
     const ObjCInterfaceDecl *InterfD;
     BugReporter &BR;
     LocationOrAnalysisDeclContext DCtx;
+    StringRef Checker;
 
   public:
     MethodCrawler(const IvarToPropertyMapTy &InMap, const ObjCMethodDecl *InMD,
         const ObjCInterfaceDecl *InID,
-        BugReporter &InBR, AnalysisDeclContext *InDCtx)
-    : IvarToPropMap(InMap), MD(InMD), InterfD(InID), BR(InBR), DCtx(InDCtx) {}
+        BugReporter &InBR, AnalysisDeclContext *InDCtx, StringRef Checker)
+    : IvarToPropMap(InMap), MD(InMD), InterfD(InID), BR(InBR), DCtx(InDCtx),
+      Checker(Checker) {}
 
     void VisitStmt(const Stmt *S) { VisitChildren(S); }
 
@@ -152,7 +154,8 @@ void DirectIvarAssignment::checkASTDecl(const ObjCImplementationDecl *D,
     const Stmt *Body = M->getBody();
     assert(Body);
 
-    MethodCrawler MC(IvarToPropMap, M->getCanonicalDecl(), InterD, BR, DCtx);
+    MethodCrawler MC(IvarToPropMap, M->getCanonicalDecl(), InterD, BR, DCtx,
+                     getTagDescription());
     MC.VisitStmt(Body);
   }
 }
@@ -206,7 +209,7 @@ void DirectIvarAssignment::MethodCrawler::VisitBinaryOperator(
 
       BR.EmitBasicReport(MD,
           "Property access",
-          categories::CoreFoundationObjectiveC,
+          categories::CoreFoundationObjectiveC, Checker,
           "Direct assignment to an instance variable backing a property; "
           "use the setter instead", PathDiagnosticLocation(IvarRef,
                                                           BR.getSourceManager(),
@@ -218,8 +221,8 @@ void DirectIvarAssignment::MethodCrawler::VisitBinaryOperator(
 
 // Register the checker that checks for direct accesses in all functions,
 // except for the initialization and copy routines.
-void ento::registerDirectIvarAssignment(CheckerManager &mgr) {
-  mgr.registerChecker<DirectIvarAssignment>();
+void ento::registerDirectIvarAssignment(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<DirectIvarAssignment>(Name);
 }
 
 // Register the checker that checks for direct accesses in functions annotated
@@ -237,6 +240,6 @@ static bool AttrFilter(const ObjCMethodDecl *M) {
 }
 
 void ento::registerDirectIvarAssignmentForAnnotatedFunctions(
-    CheckerManager &mgr) {
-  mgr.registerChecker<DirectIvarAssignment>()->ShouldSkipMethod = &AttrFilter;
+    CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<DirectIvarAssignment>(Name)->ShouldSkipMethod = &AttrFilter;
 }

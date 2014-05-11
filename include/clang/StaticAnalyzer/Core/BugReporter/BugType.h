@@ -31,17 +31,19 @@ class BugType {
 private:
   const std::string Name;
   const std::string Category;
+  const std::string Checker;
   bool SuppressonSink;
 
   virtual void anchor();
 public:
-  BugType(StringRef name, StringRef cat)
-    : Name(name), Category(cat), SuppressonSink(false) {}
+  BugType(StringRef name, StringRef cat, StringRef checker)
+    : Name(name), Category(cat), Checker(checker), SuppressonSink(false) {}
   virtual ~BugType() {}
 
   // FIXME: Should these be made strings as well?
   StringRef getName() const { return Name; }
   StringRef getCategory() const { return Category; }
+  StringRef getChecker() const { return Checker; }
   
   /// isSuppressOnSink - Returns true if bug reports associated with this bug
   ///  type should be suppressed if the end node of the report is post-dominated
@@ -56,11 +58,11 @@ class BuiltinBug : public BugType {
   const std::string desc;
   virtual void anchor();
 public:
-  BuiltinBug(const char *name, const char *description)
-    : BugType(name, categories::LogicError), desc(description) {}
+  BuiltinBug(StringRef name, StringRef description, StringRef checker)
+    : BugType(name, categories::LogicError, checker), desc(description) {}
   
-  BuiltinBug(const char *name)
-    : BugType(name, categories::LogicError), desc(name) {}
+  BuiltinBug(StringRef name, StringRef checker)
+    : BugType(name, categories::LogicError, checker), desc(name) {}
   
   StringRef getDescription() const { return desc; }
 };

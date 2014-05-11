@@ -83,8 +83,9 @@ namespace {
 class InitSelfBug : public BugType {
   const std::string desc;
 public:
-  InitSelfBug() : BugType("Missing \"self = [(super or self) init...]\"",
-                          categories::CoreFoundationObjectiveC) {}
+  InitSelfBug(StringRef Checker)
+    : BugType("Missing \"self = [(super or self) init...]\"",
+              categories::CoreFoundationObjectiveC, Checker) {}
 };
 
 } // end anonymous namespace
@@ -147,7 +148,7 @@ static bool isInvalidSelf(const Expr *E, CheckerContext &C) {
 }
 
 static void checkForInvalidSelf(const Expr *E, CheckerContext &C,
-                                const char *errorStr) {
+                                const char *errorStr, StringRef Checker) {
   if (!E)
     return;
   
@@ -163,7 +164,7 @@ static void checkForInvalidSelf(const Expr *E, CheckerContext &C,
     return;
 
   BugReport *report =
-    new BugReport(*new InitSelfBug(), errorStr, N);
+    new BugReport(*new InitSelfBug(Checker), errorStr, N);
   C.emitReport(report);
 }
 
@@ -207,7 +208,7 @@ void ObjCSelfInitChecker::checkPostStmt(const ObjCIvarRefExpr *E,
 
   checkForInvalidSelf(E->getBase(), C,
     "Instance variable used while 'self' is not set to the result of "
-                                                 "'[(super or self) init...]'");
+    "'[(super or self) init...]'", getTagDescription());
 }
 
 void ObjCSelfInitChecker::checkPreStmt(const ReturnStmt *S,
@@ -219,7 +220,7 @@ void ObjCSelfInitChecker::checkPreStmt(const ReturnStmt *S,
 
   checkForInvalidSelf(S->getRetValue(), C,
     "Returning 'self' while it is not set to the result of "
-                                                 "'[(super or self) init...]'");
+    "'[(super or self) init...]'", getTagDescription());
 }
 
 // When a call receives a reference to 'self', [Pre/Post]Call pass
@@ -440,6 +441,6 @@ static bool isInitMessage(const ObjCMethodCall &Call) {
 // Registration.
 //===----------------------------------------------------------------------===//
 
-void ento::registerObjCSelfInitChecker(CheckerManager &mgr) {
-  mgr.registerChecker<ObjCSelfInitChecker>();
+void ento::registerObjCSelfInitChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<ObjCSelfInitChecker>(Name);
 }

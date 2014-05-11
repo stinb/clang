@@ -98,7 +98,8 @@ static bool scan_ivar_release(Stmt *S, ObjCIvarDecl *ID,
 }
 
 static void checkObjCDealloc(const ObjCImplementationDecl *D,
-                             const LangOptions& LOpts, BugReporter& BR) {
+                             const LangOptions& LOpts, BugReporter& BR,
+                             StringRef Checker) {
 
   assert (LOpts.getGC() != LangOptions::GCOnly);
 
@@ -181,7 +182,7 @@ static void checkObjCDealloc(const ObjCImplementationDecl *D,
     os << "Objective-C class '" << *D << "' lacks a 'dealloc' instance method";
 
     BR.EmitBasicReport(D, name, categories::CoreFoundationObjectiveC,
-                       os.str(), DLoc);
+                       Checker, os.str(), DLoc);
     return;
   }
 
@@ -199,7 +200,7 @@ static void checkObjCDealloc(const ObjCImplementationDecl *D,
            " (missing [super dealloc])";
 
     BR.EmitBasicReport(MD, name, categories::CoreFoundationObjectiveC,
-                       os.str(), DLoc);
+                       Checker, os.str(), DLoc);
     return;
   }
 
@@ -265,7 +266,7 @@ static void checkObjCDealloc(const ObjCImplementationDecl *D,
         PathDiagnosticLocation::createBegin(*I, BR.getSourceManager());
 
       BR.EmitBasicReport(MD, name, categories::CoreFoundationObjectiveC,
-                         os.str(), SDLoc);
+                         Checker, os.str(), SDLoc);
     }
   }
 }
@@ -282,11 +283,12 @@ public:
                     BugReporter &BR) const {
     if (mgr.getLangOpts().getGC() == LangOptions::GCOnly)
       return;
-    checkObjCDealloc(cast<ObjCImplementationDecl>(D), mgr.getLangOpts(), BR);
+    checkObjCDealloc(cast<ObjCImplementationDecl>(D), mgr.getLangOpts(), BR,
+                     getTagDescription());
   }
 };
 }
 
-void ento::registerObjCDeallocChecker(CheckerManager &mgr) {
-  mgr.registerChecker<ObjCDeallocChecker>();
+void ento::registerObjCDeallocChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<ObjCDeallocChecker>(Name);
 }

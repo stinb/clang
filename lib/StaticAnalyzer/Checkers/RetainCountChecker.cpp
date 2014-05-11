@@ -1543,8 +1543,8 @@ namespace {
 
   class CFRefBug : public BugType {
   protected:
-    CFRefBug(StringRef name)
-    : BugType(name, categories::MemoryCoreFoundationObjectiveC) {}
+    CFRefBug(StringRef name, StringRef Checker)
+    : BugType(name, categories::MemoryCoreFoundationObjectiveC, Checker) {}
   public:
 
     // FIXME: Eventually remove.
@@ -1555,7 +1555,8 @@ namespace {
 
   class UseAfterRelease : public CFRefBug {
   public:
-    UseAfterRelease() : CFRefBug("Use-after-release") {}
+    UseAfterRelease(StringRef Checker)
+    : CFRefBug("Use-after-release", Checker) {}
 
     const char *getDescription() const {
       return "Reference-counted object is used after it is released";
@@ -1564,7 +1565,7 @@ namespace {
 
   class BadRelease : public CFRefBug {
   public:
-    BadRelease() : CFRefBug("Bad release") {}
+    BadRelease(StringRef Checker) : CFRefBug("Bad release", Checker) {}
 
     const char *getDescription() const {
       return "Incorrect decrement of the reference count of an object that is "
@@ -1574,8 +1575,8 @@ namespace {
 
   class DeallocGC : public CFRefBug {
   public:
-    DeallocGC()
-    : CFRefBug("-dealloc called while using garbage collection") {}
+    DeallocGC(StringRef Checker)
+    : CFRefBug("-dealloc called while using garbage collection", Checker) {}
 
     const char *getDescription() const {
       return "-dealloc called while using garbage collection";
@@ -1584,8 +1585,8 @@ namespace {
 
   class DeallocNotOwned : public CFRefBug {
   public:
-    DeallocNotOwned()
-    : CFRefBug("-dealloc sent to non-exclusively owned object") {}
+    DeallocNotOwned(StringRef Checker)
+    : CFRefBug("-dealloc sent to non-exclusively owned object", Checker) {}
 
     const char *getDescription() const {
       return "-dealloc sent to object that may be referenced elsewhere";
@@ -1594,8 +1595,8 @@ namespace {
 
   class OverAutorelease : public CFRefBug {
   public:
-    OverAutorelease()
-    : CFRefBug("Object autoreleased too many times") {}
+    OverAutorelease(StringRef Checker)
+    : CFRefBug("Object autoreleased too many times", Checker) {}
 
     const char *getDescription() const {
       return "Object autoreleased too many times";
@@ -1604,8 +1605,8 @@ namespace {
 
   class ReturnedNotOwnedForOwned : public CFRefBug {
   public:
-    ReturnedNotOwnedForOwned()
-    : CFRefBug("Method should return an owned object") {}
+    ReturnedNotOwnedForOwned(StringRef Checker)
+    : CFRefBug("Method should return an owned object", Checker) {}
 
     const char *getDescription() const {
       return "Object with a +0 retain count returned to caller where a +1 "
@@ -1615,8 +1616,8 @@ namespace {
 
   class Leak : public CFRefBug {
   public:
-    Leak(StringRef name)
-    : CFRefBug(name) {
+    Leak(StringRef name, StringRef Checker)
+    : CFRefBug(name, Checker) {
       // Leaks should not be reported if they are post-dominated by a sink.
       setSuppressOnSink(true);
     }
@@ -2403,16 +2404,18 @@ public:
     if (GCEnabled) {
       if (!leakWithinFunctionGC)
         leakWithinFunctionGC.reset(new Leak("Leak of object when using "
-                                             "garbage collection"));
+                                            "garbage collection",
+                                            getTagDescription()));
       return leakWithinFunctionGC.get();
     } else {
       if (!leakWithinFunction) {
         if (LOpts.getGC() == LangOptions::HybridGC) {
           leakWithinFunction.reset(new Leak("Leak of object when not using "
                                             "garbage collection (GC) in "
-                                            "dual GC/non-GC code"));
+                                            "dual GC/non-GC code",
+                                            getTagDescription()));
         } else {
-          leakWithinFunction.reset(new Leak("Leak"));
+          leakWithinFunction.reset(new Leak("Leak", getTagDescription()));
         }
       }
       return leakWithinFunction.get();
@@ -2423,16 +2426,18 @@ public:
     if (GCEnabled) {
       if (!leakAtReturnGC)
         leakAtReturnGC.reset(new Leak("Leak of returned object when using "
-                                      "garbage collection"));
+                                      "garbage collection",
+                                      getTagDescription()));
       return leakAtReturnGC.get();
     } else {
       if (!leakAtReturn) {
         if (LOpts.getGC() == LangOptions::HybridGC) {
           leakAtReturn.reset(new Leak("Leak of returned object when not using "
                                       "garbage collection (GC) in dual "
-                                      "GC/non-GC code"));
+                                      "GC/non-GC code", getTagDescription()));
         } else {
-          leakAtReturn.reset(new Leak("Leak of returned object"));
+          leakAtReturn.reset(new Leak("Leak of returned object",
+                                      getTagDescription()));
         }
       }
       return leakAtReturn.get();
@@ -3053,22 +3058,22 @@ void RetainCountChecker::processNonLeakError(ProgramStateRef St,
       llvm_unreachable("Unhandled error.");
     case RefVal::ErrorUseAfterRelease:
       if (!useAfterRelease)
-        useAfterRelease.reset(new UseAfterRelease());
+        useAfterRelease.reset(new UseAfterRelease(getTagDescription()));
       BT = &*useAfterRelease;
       break;
     case RefVal::ErrorReleaseNotOwned:
       if (!releaseNotOwned)
-        releaseNotOwned.reset(new BadRelease());
+        releaseNotOwned.reset(new BadRelease(getTagDescription()));
       BT = &*releaseNotOwned;
       break;
     case RefVal::ErrorDeallocGC:
       if (!deallocGC)
-        deallocGC.reset(new DeallocGC());
+        deallocGC.reset(new DeallocGC(getTagDescription()));
       BT = &*deallocGC;
       break;
     case RefVal::ErrorDeallocNotOwned:
       if (!deallocNotOwned)
-        deallocNotOwned.reset(new DeallocNotOwned());
+        deallocNotOwned.reset(new DeallocNotOwned(getTagDescription()));
       BT = &*deallocNotOwned;
       break;
   }
@@ -3320,7 +3325,8 @@ void RetainCountChecker::checkReturnWithRetEffect(const ReturnStmt *S,
       ExplodedNode *N = C.addTransition(state, Pred, &ReturnNotOwnedTag);
       if (N) {
         if (!returnNotOwnedForOwned)
-          returnNotOwnedForOwned.reset(new ReturnedNotOwnedForOwned());
+          returnNotOwnedForOwned.reset(
+            new ReturnedNotOwnedForOwned(getTagDescription()));
 
         CFRefReport *report =
             new CFRefReport(*returnNotOwnedForOwned,
@@ -3508,7 +3514,7 @@ RetainCountChecker::handleAutoreleaseCounts(ProgramStateRef state,
     os << "has a +" << V.getCount() << " retain count";
 
     if (!overAutorelease)
-      overAutorelease.reset(new OverAutorelease());
+      overAutorelease.reset(new OverAutorelease(getTagDescription()));
 
     const LangOptions &LOpts = Ctx.getASTContext().getLangOpts();
     CFRefReport *report =
@@ -3685,8 +3691,8 @@ void RetainCountChecker::printState(raw_ostream &Out, ProgramStateRef State,
 // Checker registration.
 //===----------------------------------------------------------------------===//
 
-void ento::registerRetainCountChecker(CheckerManager &Mgr) {
-  Mgr.registerChecker<RetainCountChecker>(Mgr.getAnalyzerOptions());
+void ento::registerRetainCountChecker(CheckerManager &Mgr, StringRef Name) {
+  Mgr.registerChecker<RetainCountChecker>(Name, Mgr.getAnalyzerOptions());
 }
 
 //===----------------------------------------------------------------------===//

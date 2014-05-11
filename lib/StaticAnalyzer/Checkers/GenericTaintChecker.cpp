@@ -46,7 +46,8 @@ private:
   mutable OwningPtr<BugType> BT;
   inline void initBugType() const {
     if (!BT)
-      BT.reset(new BugType("Use of Untrusted Data", "Untrusted Data"));
+      BT.reset(new BugType("Use of Untrusted Data", "Untrusted Data",
+                           getTagDescription()));
   }
 
   /// \brief Catch taint related bugs. Check if tainted data is passed to a
@@ -740,6 +741,6 @@ bool GenericTaintChecker::checkTaintedBufferSize(const CallExpr *CE,
   return false;
 }
 
-void ento::registerGenericTaintChecker(CheckerManager &mgr) {
-  mgr.registerChecker<GenericTaintChecker>();
+void ento::registerGenericTaintChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<GenericTaintChecker>(Name);
 }

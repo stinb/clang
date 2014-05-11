@@ -76,7 +76,8 @@ void NSErrorMethodChecker::checkASTDecl(const ObjCMethodDecl *D,
     PathDiagnosticLocation L =
       PathDiagnosticLocation::create(D, BR.getSourceManager());
     BR.EmitBasicReport(D, "Bad return type when passing NSError**",
-                       "Coding conventions (Apple)", err, L);
+                       "Coding conventions (Apple)", getTagDescription(),
+                       err, L);
   }
 }
 
@@ -124,7 +125,8 @@ void CFErrorFunctionChecker::checkASTDecl(const FunctionDecl *D,
     PathDiagnosticLocation L =
       PathDiagnosticLocation::create(D, BR.getSourceManager());
     BR.EmitBasicReport(D, "Bad return type when passing CFErrorRef*",
-                       "Coding conventions (Apple)", err, L);
+                       "Coding conventions (Apple)", getTagDescription(),
+                       err, L);
   }
 }
 
@@ -136,14 +138,16 @@ namespace {
 
 class NSErrorDerefBug : public BugType {
 public:
-  NSErrorDerefBug() : BugType("NSError** null dereference",
-                              "Coding conventions (Apple)") {}
+  NSErrorDerefBug(StringRef Checker)
+    : BugType("NSError** null dereference","Coding conventions (Apple)",
+              Checker) {}
 };
 
 class CFErrorDerefBug : public BugType {
 public:
-  CFErrorDerefBug() : BugType("CFErrorRef* null dereference",
-                              "Coding conventions (Apple)") {}
+  CFErrorDerefBug(StringRef Checker)
+    : BugType("CFErrorRef* null dereference", "Coding conventions (Apple)",
+              Checker) {}
 };
 
 }
@@ -264,11 +268,10 @@ void NSOrCFErrorDerefChecker::checkEvent(ImplicitNullDerefEvent event) const {
 
   BugType *bug = 0;
   if (isNSError)
-    bug = new NSErrorDerefBug();
+    bug = new NSErrorDerefBug(getTagDescription());
   else
-    bug = new CFErrorDerefBug();
-  BugReport *report = new BugReport(*bug, os.str(),
-                                                    event.SinkNode);
+    bug = new CFErrorDerefBug(getTagDescription());
+  BugReport *report = new BugReport(*bug, os.str(), event.SinkNode);
   BR.emitReport(report);
 }
 
@@ -303,16 +306,16 @@ static bool IsCFError(QualType T, IdentifierInfo *II) {
   return TT->getDecl()->getIdentifier() == II;
 }
 
-void ento::registerNSErrorChecker(CheckerManager &mgr) {
-  mgr.registerChecker<NSErrorMethodChecker>();
+void ento::registerNSErrorChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<NSErrorMethodChecker>(Name);
   NSOrCFErrorDerefChecker *
-    checker = mgr.registerChecker<NSOrCFErrorDerefChecker>();
+    checker = mgr.registerChecker<NSOrCFErrorDerefChecker>(Name);
   checker->ShouldCheckNSError = true;
 }
 
-void ento::registerCFErrorChecker(CheckerManager &mgr) {
-  mgr.registerChecker<CFErrorFunctionChecker>();
+void ento::registerCFErrorChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<CFErrorFunctionChecker>(Name);
   NSOrCFErrorDerefChecker *
-    checker = mgr.registerChecker<NSOrCFErrorDerefChecker>();
+    checker = mgr.registerChecker<NSOrCFErrorDerefChecker>(Name);
   checker->ShouldCheckCFError = true;
 }

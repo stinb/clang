@@ -1222,7 +1222,8 @@ void MallocChecker::ReportBadFree(CheckerContext &C, SVal ArgVal,
 
   if (ExplodedNode *N = C.generateSink()) {
     if (!BT_BadFree)
-      BT_BadFree.reset(new BugType("Bad free", "Memory Error"));
+      BT_BadFree.reset(new BugType("Bad free", "Memory Error",
+                                   getTagDescription()));
     
     SmallString<100> buf;
     llvm::raw_svector_ostream os(buf);
@@ -1269,7 +1270,8 @@ void MallocChecker::ReportMismatchedDealloc(CheckerContext &C,
   if (ExplodedNode *N = C.generateSink()) {
     if (!BT_MismatchedDealloc)
       BT_MismatchedDealloc.reset(new BugType("Bad deallocator",
-                                             "Memory Error"));
+                                             "Memory Error",
+                                             getTagDescription()));
     
     SmallString<100> buf;
     llvm::raw_svector_ostream os(buf);
@@ -1326,7 +1328,8 @@ void MallocChecker::ReportOffsetFree(CheckerContext &C, SVal ArgVal,
     return;
 
   if (!BT_OffsetFree)
-    BT_OffsetFree.reset(new BugType("Offset free", "Memory Error"));
+    BT_OffsetFree.reset(new BugType("Offset free", "Memory Error",
+                                    getTagDescription()));
 
   SmallString<100> buf;
   llvm::raw_svector_ostream os(buf);
@@ -1375,7 +1378,8 @@ void MallocChecker::ReportUseAfterFree(CheckerContext &C, SourceRange Range,
 
   if (ExplodedNode *N = C.generateSink()) {
     if (!BT_UseFree)
-      BT_UseFree.reset(new BugType("Use-after-free", "Memory Error"));
+      BT_UseFree.reset(new BugType("Use-after-free", "Memory Error",
+                                   getTagDescription()));
 
     BugReport *R = new BugReport(*BT_UseFree,
                                  "Use of memory after it is freed", N);
@@ -1400,7 +1404,8 @@ void MallocChecker::ReportDoubleFree(CheckerContext &C, SourceRange Range,
 
   if (ExplodedNode *N = C.generateSink()) {
     if (!BT_DoubleFree)
-      BT_DoubleFree.reset(new BugType("Double free", "Memory Error"));
+      BT_DoubleFree.reset(new BugType("Double free", "Memory Error",
+                                      getTagDescription()));
 
     BugReport *R = new BugReport(*BT_DoubleFree,
       (Released ? "Attempt to free released memory"
@@ -1594,7 +1599,8 @@ void MallocChecker::reportLeak(SymbolRef Sym, ExplodedNode *N,
 
   assert(N);
   if (!BT_Leak) {
-    BT_Leak.reset(new BugType("Memory leak", "Memory Error"));
+    BT_Leak.reset(new BugType("Memory leak", "Memory Error",
+                              getTagDescription()));
     // Leaks should not be reported if they are post-dominated by a sink:
     // (1) Sinks are higher importance bugs.
     // (2) NoReturnFunctionChecker uses sink nodes to represent paths ending
@@ -2188,18 +2194,18 @@ void MallocChecker::printState(raw_ostream &Out, ProgramStateRef State,
   }
 }
 
-void ento::registerNewDeleteLeaksChecker(CheckerManager &mgr) {
-  registerCStringCheckerBasic(mgr);
-  mgr.registerChecker<MallocChecker>()->Filter.CNewDeleteLeaksChecker = true;
+void ento::registerNewDeleteLeaksChecker(CheckerManager &mgr, StringRef Name) {
+  registerCStringCheckerBasic(mgr, Name);
+  mgr.registerChecker<MallocChecker>(Name)->Filter.CNewDeleteLeaksChecker = true;
   // We currently treat NewDeleteLeaks checker as a subchecker of NewDelete 
   // checker.
-  mgr.registerChecker<MallocChecker>()->Filter.CNewDeleteChecker = true;
+  mgr.registerChecker<MallocChecker>(Name)->Filter.CNewDeleteChecker = true;
 }
 
 #define REGISTER_CHECKER(name) \
-void ento::register##name(CheckerManager &mgr) {\
-  registerCStringCheckerBasic(mgr); \
-  mgr.registerChecker<MallocChecker>()->Filter.C##name = true;\
+void ento::register##name(CheckerManager &mgr, StringRef Name) {\
+  registerCStringCheckerBasic(mgr, Name); \
+  mgr.registerChecker<MallocChecker>(Name)->Filter.C##name = true;\
 }
 
 REGISTER_CHECKER(MallocPessimistic)

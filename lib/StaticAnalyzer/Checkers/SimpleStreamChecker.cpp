@@ -110,10 +110,11 @@ public:
 SimpleStreamChecker::SimpleStreamChecker() : IIfopen(0), IIfclose(0) {
   // Initialize the bug types.
   DoubleCloseBugType.reset(new BugType("Double fclose",
-                                       "Unix Stream API Error"));
+                                       "Unix Stream API Error",
+                                       getTagDescription()));
 
   LeakBugType.reset(new BugType("Resource Leak",
-                                "Unix Stream API Error"));
+                                "Unix Stream API Error", getTagDescription()));
   // Sinks are higher importance bugs as well as calls to assert() or exit(0).
   LeakBugType->setSuppressOnSink(true);
 }
@@ -282,6 +283,6 @@ void SimpleStreamChecker::initIdentifierInfo(ASTContext &Ctx) const {
   IIfclose = &Ctx.Idents.get("fclose");
 }
 
-void ento::registerSimpleStreamChecker(CheckerManager &mgr) {
-  mgr.registerChecker<SimpleStreamChecker>();
+void ento::registerSimpleStreamChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<SimpleStreamChecker>(Name);
 }

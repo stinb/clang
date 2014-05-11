@@ -152,6 +152,6 @@ void NoReturnFunctionChecker::checkPostObjCMessage(const ObjCMethodCall &Msg,
 }
 
 
-void ento::registerNoReturnFunctionChecker(CheckerManager &mgr) {
-  mgr.registerChecker<NoReturnFunctionChecker>();
+void ento::registerNoReturnFunctionChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<NoReturnFunctionChecker>(Name);
 }

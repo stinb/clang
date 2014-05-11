@@ -92,7 +92,7 @@ private:
   inline void initBugType() const {
     if (!BT)
       BT.reset(new BugType("Improper use of SecKeychain API",
-                           "API Misuse (Apple)"));
+                           "API Misuse (Apple)", getTagDescription()));
   }
 
   void generateDeallocatorMismatchReport(const AllocationPair &AP,
@@ -618,6 +618,7 @@ PathDiagnosticPiece *MacOSKeychainAPIChecker::SecKeychainBugVisitor::VisitNode(
   return new PathDiagnosticEventPiece(Pos, "Data is allocated here.");
 }
 
-void ento::registerMacOSKeychainAPIChecker(CheckerManager &mgr) {
-  mgr.registerChecker<MacOSKeychainAPIChecker>();
+void ento::registerMacOSKeychainAPIChecker(CheckerManager &mgr,
+                                           StringRef Name) {
+  mgr.registerChecker<MacOSKeychainAPIChecker>(Name);
 }

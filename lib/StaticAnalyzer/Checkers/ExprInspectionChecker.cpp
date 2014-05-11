@@ -95,7 +95,8 @@ void ExprInspectionChecker::analyzerEval(const CallExpr *CE,
     return;
 
   if (!BT)
-    BT.reset(new BugType("Checking analyzer assumptions", "debug"));
+    BT.reset(new BugType("Checking analyzer assumptions", "debug",
+                         getTagDescription()));
 
   BugReport *R = new BugReport(*BT, getArgumentValueString(CE, C), N);
   C.emitReport(R);
@@ -106,7 +107,8 @@ void ExprInspectionChecker::analyzerWarnIfReached(const CallExpr *CE,
   ExplodedNode *N = C.getPredecessor();
 
   if (!BT)
-    BT.reset(new BugType("Checking analyzer assumptions", "debug"));
+    BT.reset(new BugType("Checking analyzer assumptions", "debug",
+                         getTagDescription()));
 
   BugReport *R = new BugReport(*BT, "REACHABLE", N);
   C.emitReport(R);
@@ -126,7 +128,8 @@ void ExprInspectionChecker::analyzerCheckInlined(const CallExpr *CE,
     return;
 
   if (!BT)
-    BT.reset(new BugType("Checking analyzer assumptions", "debug"));
+    BT.reset(new BugType("Checking analyzer assumptions", "debug",
+                         getTagDescription()));
 
   BugReport *R = new BugReport(*BT, getArgumentValueString(CE, C), N);
   C.emitReport(R);
@@ -137,7 +140,7 @@ void ExprInspectionChecker::analyzerCrash(const CallExpr *CE,
   LLVM_BUILTIN_TRAP;
 }
 
-void ento::registerExprInspectionChecker(CheckerManager &Mgr) {
-  Mgr.registerChecker<ExprInspectionChecker>();
+void ento::registerExprInspectionChecker(CheckerManager &Mgr, StringRef Name) {
+  Mgr.registerChecker<ExprInspectionChecker>(Name);
 }
 

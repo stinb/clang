@@ -96,7 +96,7 @@ void ReturnUndefChecker::emitUndef(CheckerContext &C, const Expr *RetE) const {
   if (!BT_Undef)
     BT_Undef.reset(new BuiltinBug("Garbage return value",
                                   "Undefined or garbage value "
-                                    "returned to caller"));
+                                  "returned to caller", getTagDescription()));
   emitBug(C, *BT_Undef, RetE);
 }
 
@@ -113,11 +113,12 @@ void ReturnUndefChecker::checkReference(CheckerContext &C, const Expr *RetE,
 
   // The return value is known to be null. Emit a bug report.
   if (!BT_NullReference)
-    BT_NullReference.reset(new BuiltinBug("Returning null reference"));
+    BT_NullReference.reset(new BuiltinBug("Returning null reference",
+                                          getTagDescription()));
 
   emitBug(C, *BT_NullReference, RetE, bugreporter::getDerefExpr(RetE));
 }
 
-void ento::registerReturnUndefChecker(CheckerManager &mgr) {
-  mgr.registerChecker<ReturnUndefChecker>();
+void ento::registerReturnUndefChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<ReturnUndefChecker>(Name);
 }

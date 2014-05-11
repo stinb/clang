@@ -233,7 +233,8 @@ ProgramStateRef CStringChecker::checkNonNull(CheckerContext &C,
 
     if (!BT_Null)
       BT_Null.reset(new BuiltinBug(categories::UnixAPI,
-        "Null pointer argument in call to byte string function"));
+        "Null pointer argument in call to byte string function",
+        getTagDescription()));
 
     SmallString<80> buf;
     llvm::raw_svector_ostream os(buf);
@@ -295,7 +296,8 @@ ProgramStateRef CStringChecker::CheckLocation(CheckerContext &C,
 
     if (!BT_Bounds) {
       BT_Bounds.reset(new BuiltinBug("Out-of-bound array access",
-        "Byte string function accesses out-of-bound array element"));
+        "Byte string function accesses out-of-bound array element",
+        getTagDescription()));
     }
     BuiltinBug *BT = static_cast<BuiltinBug*>(BT_Bounds.get());
 
@@ -526,7 +528,8 @@ void CStringChecker::emitOverlapBug(CheckerContext &C, ProgramStateRef state,
     return;
 
   if (!BT_Overlap)
-    BT_Overlap.reset(new BugType(categories::UnixAPI, "Improper arguments"));
+    BT_Overlap.reset(new BugType(categories::UnixAPI, "Improper arguments",
+                                 getTagDescription()));
 
   // Generate a report for this bug.
   BugReport *report = 
@@ -587,7 +590,7 @@ ProgramStateRef CStringChecker::checkAdditionOverflow(CheckerContext &C,
 
       if (!BT_AdditionOverflow)
         BT_AdditionOverflow.reset(new BuiltinBug("API",
-          "Sum of expressions causes overflow"));
+          "Sum of expressions causes overflow", getTagDescription()));
 
       // This isn't a great error message, but this should never occur in real
       // code anyway -- you'd have to create a buffer longer than a size_t can
@@ -704,7 +707,7 @@ SVal CStringChecker::getCStringLength(CheckerContext &C, ProgramStateRef &state,
       if (ExplodedNode *N = C.addTransition(state)) {
         if (!BT_NotCString)
           BT_NotCString.reset(new BuiltinBug(categories::UnixAPI,
-            "Argument is not a null-terminated string."));
+            "Argument is not a null-terminated string.", getTagDescription()));
 
         SmallString<120> buf;
         llvm::raw_svector_ostream os(buf);
@@ -764,7 +767,7 @@ SVal CStringChecker::getCStringLength(CheckerContext &C, ProgramStateRef &state,
     if (ExplodedNode *N = C.addTransition(state)) {
       if (!BT_NotCString)
         BT_NotCString.reset(new BuiltinBug(categories::UnixAPI,
-          "Argument is not a null-terminated string."));
+          "Argument is not a null-terminated string.", getTagDescription()));
 
       SmallString<120> buf;
       llvm::raw_svector_ostream os(buf);
@@ -2058,8 +2061,8 @@ void CStringChecker::checkDeadSymbols(SymbolReaper &SR,
 }
 
 #define REGISTER_CHECKER(name) \
-void ento::register##name(CheckerManager &mgr) {\
-  mgr.registerChecker<CStringChecker>()->Filter.Check##name = true; \
+void ento::register##name(CheckerManager &mgr, StringRef Name) {\
+  mgr.registerChecker<CStringChecker>(Name)->Filter.Check##name = true; \
 }
 
 REGISTER_CHECKER(CStringNullArg)
@@ -2067,6 +2070,6 @@ REGISTER_CHECKER(CStringOutOfBounds)
 REGISTER_CHECKER(CStringBufferOverlap)
 REGISTER_CHECKER(CStringNotNullTerm)
 
-void ento::registerCStringCheckerBasic(CheckerManager &Mgr) {
-  registerCStringNullArg(Mgr);
+void ento::registerCStringCheckerBasic(CheckerManager &Mgr, StringRef Name) {
+  registerCStringNullArg(Mgr, Name);
 }

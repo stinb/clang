@@ -144,7 +144,7 @@ void ChrootChecker::checkPreStmt(const CallExpr *CE, CheckerContext &C) const {
         if (!BT_BreakJail)
           BT_BreakJail.reset(new BuiltinBug("Break out of jail",
                                         "No call of chdir(\"/\") immediately "
-                                        "after chroot"));
+                                        "after chroot", getTagDescription()));
         BugReport *R = new BugReport(*BT_BreakJail, 
                                      BT_BreakJail->getDescription(), N);
         C.emitReport(R);
@@ -153,6 +153,6 @@ void ChrootChecker::checkPreStmt(const CallExpr *CE, CheckerContext &C) const {
   return;
 }
 
-void ento::registerChrootChecker(CheckerManager &mgr) {
-  mgr.registerChecker<ChrootChecker>();
+void ento::registerChrootChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<ChrootChecker>(Name);
 }

@@ -68,7 +68,8 @@ void MacOSXAPIChecker::CheckDispatchOnce(CheckerContext &C, const CallExpr *CE,
 
   if (!BT_dispatchOnce)
     BT_dispatchOnce.reset(new BugType("Improper use of 'dispatch_once'",
-                                      "API Misuse (Apple)"));
+                                      "API Misuse (Apple)",
+                                      getTagDescription()));
 
   // Handle _dispatch_once.  In some versions of the OS X SDK we have the case
   // that dispatch_once is a macro that wraps a call to _dispatch_once.
@@ -123,6 +124,6 @@ void MacOSXAPIChecker::checkPreStmt(const CallExpr *CE,
 // Registration.
 //===----------------------------------------------------------------------===//
 
-void ento::registerMacOSXAPIChecker(CheckerManager &mgr) {
-  mgr.registerChecker<MacOSXAPIChecker>();
+void ento::registerMacOSXAPIChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<MacOSXAPIChecker>(Name);
 }

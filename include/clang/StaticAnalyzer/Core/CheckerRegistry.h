@@ -78,7 +78,7 @@ class CheckerRegistry {
 public:
   /// Initialization functions perform any necessary setup for a checker.
   /// They should include a call to CheckerManager::registerChecker.
-  typedef void (*InitializationFunction)(CheckerManager &);
+  typedef void (*InitializationFunction)(CheckerManager &, StringRef);
   struct CheckerInfo {
     InitializationFunction Initialize;
     StringRef FullName;
@@ -92,8 +92,8 @@ public:
 
 private:
   template <typename T>
-  static void initializeManager(CheckerManager &mgr) {
-    mgr.registerChecker<T>();
+  static void initializeManager(CheckerManager &mgr, StringRef Name) {
+    mgr.registerChecker<T>(Name);
   }
 
 public:
@@ -121,6 +121,10 @@ public:
   /// Prints the name and description of all checkers in this registry.
   /// This output is not intended to be machine-parseable.
   void printHelp(raw_ostream &out, size_t maxNameChars = 30) const ;
+
+  typedef CheckerInfoList::const_iterator info_const_iterator;
+  info_const_iterator info_begin() const { return Checkers.begin(); }
+  info_const_iterator info_end() const { return Checkers.end(); }
 
 private:
   mutable CheckerInfoList Checkers;

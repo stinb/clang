@@ -51,7 +51,8 @@ void VLASizeChecker::reportBug(VLASize_Kind Kind,
     return;
 
   if (!BT)
-    BT.reset(new BuiltinBug("Dangerous variable-length array (VLA) declaration"));
+    BT.reset(new BuiltinBug("Dangerous variable-length array (VLA) declaration",
+                            getTagDescription()));
 
   SmallString<256> buf;
   llvm::raw_svector_ostream os(buf);
@@ -157,6 +158,6 @@ void VLASizeChecker::checkPreStmt(const DeclStmt *DS, CheckerContext &C) const {
   C.addTransition(state);
 }
 
-void ento::registerVLASizeChecker(CheckerManager &mgr) {
-  mgr.registerChecker<VLASizeChecker>();
+void ento::registerVLASizeChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<VLASizeChecker>(Name);
 }

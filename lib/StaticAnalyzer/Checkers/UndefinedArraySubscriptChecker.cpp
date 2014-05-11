@@ -50,7 +50,8 @@ UndefinedArraySubscriptChecker::checkPreStmt(const ArraySubscriptExpr *A,
   if (!N)
     return;
   if (!BT)
-    BT.reset(new BuiltinBug("Array subscript is undefined"));
+    BT.reset(new BuiltinBug("Array subscript is undefined",
+                            getTagDescription()));
 
   // Generate a report for this bug.
   BugReport *R = new BugReport(*BT, BT->getName(), N);
@@ -59,6 +60,7 @@ UndefinedArraySubscriptChecker::checkPreStmt(const ArraySubscriptExpr *A,
   C.emitReport(R);
 }
 
-void ento::registerUndefinedArraySubscriptChecker(CheckerManager &mgr) {
-  mgr.registerChecker<UndefinedArraySubscriptChecker>();
+void ento::registerUndefinedArraySubscriptChecker(CheckerManager &mgr,
+                                                  StringRef Name) {
+  mgr.registerChecker<UndefinedArraySubscriptChecker>(Name);
 }

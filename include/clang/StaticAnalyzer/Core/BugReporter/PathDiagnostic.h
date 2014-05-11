@@ -712,6 +712,7 @@ class PathDiagnostic : public llvm::FoldingSetNode {
   std::string VerboseDesc;
   std::string ShortDesc;
   std::string Category;
+  std::string Checker;
   std::deque<std::string> OtherDesc;
 
   /// \brief Loc The location of the path diagnostic report.
@@ -729,7 +730,8 @@ class PathDiagnostic : public llvm::FoldingSetNode {
 public:
   PathDiagnostic(const Decl *DeclWithIssue, StringRef bugtype,
                  StringRef verboseDesc, StringRef shortDesc,
-                 StringRef category, PathDiagnosticLocation LocationToUnique,
+                 StringRef category, StringRef Checker,
+                 PathDiagnosticLocation LocationToUnique,
                  const Decl *DeclToUnique);
 
   ~PathDiagnostic();
@@ -787,6 +789,7 @@ public:
   }
   StringRef getBugType() const { return BugType; }
   StringRef getCategory() const { return Category; }
+  StringRef getChecker() const { return Checker; }
 
   /// Return the semantic context where an issue occurred.  If the
   /// issue occurs along a path, this represents the "central" area

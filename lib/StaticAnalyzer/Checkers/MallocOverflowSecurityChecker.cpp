@@ -214,6 +214,7 @@ void MallocOverflowSecurityChecker::OutputPossibleOverflows(
        i != e;
        ++i) {
     BR.EmitBasicReport(D, "malloc() size overflow", categories::UnixAPI,
+      getTagDescription(),
       "the computation of the size of the memory allocation may overflow",
       PathDiagnosticLocation::createOperatorLoc(i->mulop,
                                                 BR.getSourceManager()),
@@ -262,6 +263,7 @@ void MallocOverflowSecurityChecker::checkASTCodeBody(const Decl *D,
   OutputPossibleOverflows(PossibleMallocOverflows, D, BR, mgr);
 }
 
-void ento::registerMallocOverflowSecurityChecker(CheckerManager &mgr) {
-  mgr.registerChecker<MallocOverflowSecurityChecker>();
+void ento::registerMallocOverflowSecurityChecker(CheckerManager &mgr,
+                                                 StringRef Name) {
+  mgr.registerChecker<MallocOverflowSecurityChecker>(Name);
 }

@@ -465,7 +465,8 @@ public:
 
   void EmitBasicReport(const Decl *DeclWithIssue,
                        StringRef BugName, StringRef BugCategory,
-                       StringRef BugStr, PathDiagnosticLocation Loc,
+                       StringRef BugChecker, StringRef BugStr,
+                       PathDiagnosticLocation Loc,
                        ArrayRef<SourceRange> Ranges = None);
 
 private:
@@ -473,7 +474,8 @@ private:
 
   /// \brief Returns a BugType that is associated with the given name and
   /// category.
-  BugType *getBugTypeForName(StringRef name, StringRef category);
+  BugType *getBugTypeForName(StringRef name, StringRef category,
+                             StringRef checker);
 };
 
 // FIXME: Get rid of GRBugReporter.  It's the wrong abstraction.

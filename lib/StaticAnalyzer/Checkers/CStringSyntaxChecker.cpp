@@ -33,6 +33,7 @@ namespace {
 class WalkAST: public StmtVisitor<WalkAST> {
   BugReporter &BR;
   AnalysisDeclContext* AC;
+  StringRef Checker;
 
   /// Check if two expressions refer to the same declaration.
   inline bool sameDecl(const Expr *A1, const Expr *A2) {
@@ -81,8 +82,8 @@ class WalkAST: public StmtVisitor<WalkAST> {
   bool containsBadStrncatPattern(const CallExpr *CE);
 
 public:
-  WalkAST(BugReporter &br, AnalysisDeclContext* ac) :
-      BR(br), AC(ac) {
+  WalkAST(BugReporter &br, AnalysisDeclContext* ac, StringRef checker) :
+      BR(br), AC(ac), Checker(checker) {
   }
 
   // Statement visitor methods.
@@ -158,7 +159,7 @@ void WalkAST::VisitCallExpr(CallExpr *CE) {
       os << "se a safer 'strlcat' API";
 
       BR.EmitBasicReport(FD, "Anti-pattern in the argument", "C String API",
-                         os.str(), Loc, LenArg->getSourceRange());
+                         Checker, os.str(), Loc, LenArg->getSourceRange());
     }
   }
 
@@ -179,13 +180,13 @@ public:
 
   void checkASTCodeBody(const Decl *D, AnalysisManager& Mgr,
       BugReporter &BR) const {
-    WalkAST walker(BR, Mgr.getAnalysisDeclContext(D));
+    WalkAST walker(BR, Mgr.getAnalysisDeclContext(D), getTagDescription());
     walker.Visit(D->getBody());
   }
 };
 }
 
-void ento::registerCStringSyntaxChecker(CheckerManager &mgr) {
-  mgr.registerChecker<CStringSyntaxChecker>();
+void ento::registerCStringSyntaxChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<CStringSyntaxChecker>(Name);
 }
 

@@ -162,13 +162,14 @@ public:
   ///
   /// \returns a pointer to the checker object.
   template <typename CHECKER>
-  CHECKER *registerChecker() {
+  CHECKER *registerChecker(StringRef Name) {
     CheckerTag tag = getTag<CHECKER>();
     CheckerRef &ref = CheckerTags[tag];
     if (ref)
       return static_cast<CHECKER *>(ref); // already registered.
 
     CHECKER *checker = new CHECKER();
+    checker->setTagDescription(Name);
     CheckerDtors.push_back(CheckerDtor(checker, destruct<CHECKER>));
     CHECKER::_register(checker, *this);
     ref = checker;
@@ -176,13 +177,14 @@ public:
   }
 
   template <typename CHECKER>
-  CHECKER *registerChecker(AnalyzerOptions &AOpts) {
+  CHECKER *registerChecker(StringRef Name, AnalyzerOptions &AOpts) {
     CheckerTag tag = getTag<CHECKER>();
     CheckerRef &ref = CheckerTags[tag];
     if (ref)
       return static_cast<CHECKER *>(ref); // already registered.
 
     CHECKER *checker = new CHECKER(AOpts);
+    checker->setTagDescription(Name);
     CheckerDtors.push_back(CheckerDtor(checker, destruct<CHECKER>));
     CHECKER::_register(checker, *this);
     ref = checker;

@@ -272,7 +272,7 @@ void StreamChecker::Fseek(CheckerContext &C, const CallExpr *CE) const {
     if (!BT_illegalwhence)
       BT_illegalwhence.reset(new BuiltinBug("Illegal whence argument",
 					"The whence argument to fseek() should be "
-					"SEEK_SET, SEEK_END, or SEEK_CUR."));
+					"SEEK_SET, SEEK_END, or SEEK_CUR.", getTagDescription()));
     BugReport *R = new BugReport(*BT_illegalwhence, 
 				 BT_illegalwhence->getDescription(), N);
     C.emitReport(R);
@@ -349,7 +349,8 @@ ProgramStateRef StreamChecker::CheckNullStream(SVal SV, ProgramStateRef state,
     if (ExplodedNode *N = C.generateSink(stateNull)) {
       if (!BT_nullfp)
         BT_nullfp.reset(new BuiltinBug("NULL stream pointer",
-                                     "Stream pointer might be NULL."));
+                                     "Stream pointer might be NULL.",
+                                     getTagDescription()));
       BugReport *R =new BugReport(*BT_nullfp, BT_nullfp->getDescription(), N);
       C.emitReport(R);
     }
@@ -380,7 +381,8 @@ ProgramStateRef StreamChecker::CheckDoubleClose(const CallExpr *CE,
       if (!BT_doubleclose)
         BT_doubleclose.reset(new BuiltinBug("Double fclose",
                                         "Try to close a file Descriptor already"
-                                        " closed. Cause undefined behaviour."));
+                                        " closed. Cause undefined behaviour.",
+                                        getTagDescription()));
       BugReport *R = new BugReport(*BT_doubleclose,
                                    BT_doubleclose->getDescription(), N);
       C.emitReport(R);
@@ -408,7 +410,8 @@ void StreamChecker::checkDeadSymbols(SymbolReaper &SymReaper,
       if (N) {
         if (!BT_ResourceLeak)
           BT_ResourceLeak.reset(new BuiltinBug("Resource Leak", 
-                         "Opened File never closed. Potential Resource leak."));
+                         "Opened File never closed. Potential Resource leak.",
+                         getTagDescription()));
         BugReport *R = new BugReport(*BT_ResourceLeak, 
                                      BT_ResourceLeak->getDescription(), N);
         C.emitReport(R);
@@ -417,6 +420,6 @@ void StreamChecker::checkDeadSymbols(SymbolReaper &SymReaper,
   }
 }
 
-void ento::registerStreamChecker(CheckerManager &mgr) {
-  mgr.registerChecker<StreamChecker>();
+void ento::registerStreamChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<StreamChecker>(Name);
 }

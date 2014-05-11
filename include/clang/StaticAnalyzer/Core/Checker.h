@@ -453,8 +453,10 @@ public:
 } // end eval namespace
 
 class CheckerBase : public ProgramPointTag {
+  StringRef FullName;
 public:
   StringRef getTagDescription() const;
+  void setTagDescription(StringRef TagDesc) { FullName = TagDesc; }
 
   /// See CheckerManager::runCheckersForPrintState.
   virtual void printState(raw_ostream &Out, ProgramStateRef State,

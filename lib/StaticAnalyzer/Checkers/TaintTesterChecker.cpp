@@ -38,7 +38,7 @@ public:
 
 inline void TaintTesterChecker::initBugType() const {
   if (!BT)
-    BT.reset(new BugType("Tainted data", "General"));
+    BT.reset(new BugType("Tainted data", "General", getTagDescription()));
 }
 
 void TaintTesterChecker::checkPostStmt(const Expr *E,
@@ -57,6 +57,6 @@ void TaintTesterChecker::checkPostStmt(const Expr *E,
   }
 }
 
-void ento::registerTaintTesterChecker(CheckerManager &mgr) {
-  mgr.registerChecker<TaintTesterChecker>();
+void ento::registerTaintTesterChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<TaintTesterChecker>(Name);
 }

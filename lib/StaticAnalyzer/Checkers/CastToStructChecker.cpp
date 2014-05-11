@@ -61,7 +61,7 @@ void CastToStructChecker::checkPreStmt(const CastExpr *CE,
         BT.reset(new BuiltinBug("Cast from non-struct type to struct type",
                             "Casting a non-structure type to a structure type "
                             "and accessing a field can lead to memory access "
-                            "errors or data corruption."));
+                            "errors or data corruption.", getTagDescription()));
       BugReport *R = new BugReport(*BT,BT->getDescription(), N);
       R->addRange(CE->getSourceRange());
       C.emitReport(R);
@@ -69,6 +69,6 @@ void CastToStructChecker::checkPreStmt(const CastExpr *CE,
   }
 }
 
-void ento::registerCastToStructChecker(CheckerManager &mgr) {
-  mgr.registerChecker<CastToStructChecker>();
+void ento::registerCastToStructChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<CastToStructChecker>(Name);
 }

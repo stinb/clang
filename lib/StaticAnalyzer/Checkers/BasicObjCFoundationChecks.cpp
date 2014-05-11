@@ -39,7 +39,8 @@ using namespace ento;
 namespace {
 class APIMisuse : public BugType {
 public:
-  APIMisuse(const char* name) : BugType(name, "API Misuse (Apple)") {}
+  APIMisuse(StringRef name, StringRef checker)
+    : BugType(name, "API Misuse (Apple)", checker) {}
 };
 } // end anonymous namespace
 
@@ -188,7 +189,7 @@ void NilArgChecker::generateBugReport(ExplodedNode *N,
                                       const Expr *E,
                                       CheckerContext &C) const {
   if (!BT)
-    BT.reset(new APIMisuse("nil argument"));
+    BT.reset(new APIMisuse("nil argument", getTagDescription()));
 
   BugReport *R = new BugReport(*BT, Msg, N);
   R->addRange(Range);
@@ -480,7 +481,7 @@ void CFNumberCreateChecker::checkPreStmt(const CallExpr *CE,
       << " bits of the input integer will be lost.";
 
     if (!BT)
-      BT.reset(new APIMisuse("Bad use of CFNumberCreate"));
+      BT.reset(new APIMisuse("Bad use of CFNumberCreate", getTagDescription()));
     
     BugReport *report = new BugReport(*BT, os.str(), N);
     report->addRange(CE->getArg(2)->getSourceRange());
@@ -520,7 +521,8 @@ void CFRetainReleaseChecker::checkPreStmt(const CallExpr *CE,
     Release = &Ctx.Idents.get("CFRelease");
     MakeCollectable = &Ctx.Idents.get("CFMakeCollectable");
     BT.reset(
-      new APIMisuse("null passed to CFRetain/CFRelease/CFMakeCollectable"));
+      new APIMisuse("null passed to CFRetain/CFRelease/CFMakeCollectable",
+                    getTagDescription()));
   }
 
   // Check if we called CFRetain/CFRelease/CFMakeCollectable.
@@ -598,7 +600,7 @@ void ClassReleaseChecker::checkPreObjCMessage(const ObjCMethodCall &msg,
   
   if (!BT) {
     BT.reset(new APIMisuse("message incorrectly sent to class instead of class "
-                           "instance"));
+                           "instance", getTagDescription()));
   
     ASTContext &Ctx = C.getASTContext();
     releaseS = GetNullarySelector("release", Ctx);
@@ -704,7 +706,7 @@ void VariadicMethodTypeChecker::checkPreObjCMessage(const ObjCMethodCall &msg,
                                                     CheckerContext &C) const {
   if (!BT) {
     BT.reset(new APIMisuse("Arguments passed to variadic method aren't all "
-                           "Objective-C pointer types"));
+                           "Objective-C pointer types", getTagDescription()));
 
     ASTContext &Ctx = C.getASTContext();
     arrayWithObjectsS = GetUnarySelector("arrayWithObjects", Ctx);
@@ -1213,30 +1215,32 @@ void ObjCNonNilReturnValueChecker::checkPostObjCMessage(const ObjCMethodCall &M,
 // Check registration.
 //===----------------------------------------------------------------------===//
 
-void ento::registerNilArgChecker(CheckerManager &mgr) {
-  mgr.registerChecker<NilArgChecker>();
+void ento::registerNilArgChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<NilArgChecker>(Name);
 }
 
-void ento::registerCFNumberCreateChecker(CheckerManager &mgr) {
-  mgr.registerChecker<CFNumberCreateChecker>();
+void ento::registerCFNumberCreateChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<CFNumberCreateChecker>(Name);
 }
 
-void ento::registerCFRetainReleaseChecker(CheckerManager &mgr) {
-  mgr.registerChecker<CFRetainReleaseChecker>();
+void ento::registerCFRetainReleaseChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<CFRetainReleaseChecker>(Name);
 }
 
-void ento::registerClassReleaseChecker(CheckerManager &mgr) {
-  mgr.registerChecker<ClassReleaseChecker>();
+void ento::registerClassReleaseChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<ClassReleaseChecker>(Name);
 }
 
-void ento::registerVariadicMethodTypeChecker(CheckerManager &mgr) {
-  mgr.registerChecker<VariadicMethodTypeChecker>();
+void ento::registerVariadicMethodTypeChecker(CheckerManager &mgr,
+                                             StringRef Name) {
+  mgr.registerChecker<VariadicMethodTypeChecker>(Name);
 }
 
-void ento::registerObjCLoopChecker(CheckerManager &mgr) {
-  mgr.registerChecker<ObjCLoopChecker>();
+void ento::registerObjCLoopChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<ObjCLoopChecker>(Name);
 }
 
-void ento::registerObjCNonNilReturnValueChecker(CheckerManager &mgr) {
-  mgr.registerChecker<ObjCNonNilReturnValueChecker>();
+void ento::registerObjCNonNilReturnValueChecker(CheckerManager &mgr,
+                                                StringRef Name) {
+  mgr.registerChecker<ObjCNonNilReturnValueChecker>(Name);
 }

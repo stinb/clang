@@ -79,7 +79,8 @@ UndefCapturedBlockVarChecker::checkPostStmt(const BlockExpr *BE,
           state->getSVal(I.getOriginalRegion()).getAs<UndefinedVal>()) {
       if (ExplodedNode *N = C.generateSink()) {
         if (!BT)
-          BT.reset(new BuiltinBug("uninitialized variable captured by block"));
+          BT.reset(new BuiltinBug("uninitialized variable captured by block",
+                                  getTagDescription()));
 
         // Generate a bug report.
         SmallString<128> buf;
@@ -101,6 +102,7 @@ UndefCapturedBlockVarChecker::checkPostStmt(const BlockExpr *BE,
   }
 }
 
-void ento::registerUndefCapturedBlockVarChecker(CheckerManager &mgr) {
-  mgr.registerChecker<UndefCapturedBlockVarChecker>();
+void ento::registerUndefCapturedBlockVarChecker(CheckerManager &mgr,
+                                                StringRef Name) {
+  mgr.registerChecker<UndefCapturedBlockVarChecker>(Name);
 }

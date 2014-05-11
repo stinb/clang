@@ -25,9 +25,11 @@ namespace {
 class WalkAST : public StmtVisitor<WalkAST> {
   BugReporter &BR;
   AnalysisDeclContext* AC;
+  StringRef Checker;
 
 public:
-  WalkAST(BugReporter &br, AnalysisDeclContext* ac) : BR(br), AC(ac) {}
+  WalkAST(BugReporter &br, AnalysisDeclContext* ac, StringRef Checker)
+    : BR(br), AC(ac), Checker(Checker) {}
   void VisitUnaryExprOrTypeTraitExpr(UnaryExprOrTypeTraitExpr *E);
   void VisitStmt(Stmt *S) { VisitChildren(S); }
   void VisitChildren(Stmt *S);
@@ -64,7 +66,7 @@ void WalkAST::VisitUnaryExprOrTypeTraitExpr(UnaryExprOrTypeTraitExpr *E) {
       PathDiagnosticLocation::createBegin(E, BR.getSourceManager(), AC);
     BR.EmitBasicReport(AC->getDecl(),
                        "Potential unintended use of sizeof() on pointer type",
-                       categories::LogicError,
+                       categories::LogicError, Checker,
                        "The code calls sizeof() on a pointer type. "
                        "This can produce an unexpected result.",
                        ELoc, ArgEx->getSourceRange());
@@ -80,12 +82,12 @@ class SizeofPointerChecker : public Checker<check::ASTCodeBody> {
 public:
   void checkASTCodeBody(const Decl *D, AnalysisManager& mgr,
                         BugReporter &BR) const {
-    WalkAST walker(BR, mgr.getAnalysisDeclContext(D));
+    WalkAST walker(BR, mgr.getAnalysisDeclContext(D), getTagDescription());
     walker.Visit(D->getBody());
   }
 };
 }
 
-void ento::registerSizeofPointerChecker(CheckerManager &mgr) {
-  mgr.registerChecker<SizeofPointerChecker>();
+void ento::registerSizeofPointerChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<SizeofPointerChecker>(Name);
 }

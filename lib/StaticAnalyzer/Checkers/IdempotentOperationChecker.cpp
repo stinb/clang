@@ -346,7 +346,8 @@ void IdempotentOperationChecker::checkEndAnalysis(ExplodedGraph &G,
                                                   BugReporter &BR,
                                                   ExprEngine &Eng) const {
   if (!BT)
-    BT.reset(new BugType("Idempotent operation", "Dead code"));
+    BT.reset(new BugType("Idempotent operation", "Dead code",
+                         getTagDescription()));
 
   // Iterate over the hash to see if we have any paths with definite
   // idempotent operations.
@@ -732,6 +733,7 @@ bool IdempotentOperationChecker::containsNonLocalVarDecl(const Stmt *S) {
 }
 
 
-void ento::registerIdempotentOperationChecker(CheckerManager &mgr) {
-  mgr.registerChecker<IdempotentOperationChecker>();
+void ento::registerIdempotentOperationChecker(CheckerManager &mgr,
+                                              StringRef Name) {
+  mgr.registerChecker<IdempotentOperationChecker>(Name);
 }

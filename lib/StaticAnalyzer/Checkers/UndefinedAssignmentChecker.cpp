@@ -54,7 +54,7 @@ void UndefinedAssignmentChecker::checkBind(SVal location, SVal val,
   const char *str = "Assigned value is garbage or undefined";
 
   if (!BT)
-    BT.reset(new BuiltinBug(str));
+    BT.reset(new BuiltinBug(str, getTagDescription()));
 
   // Generate a report for this bug.
   const Expr *ex = 0;
@@ -91,6 +91,7 @@ void UndefinedAssignmentChecker::checkBind(SVal location, SVal val,
   C.emitReport(R);
 }
 
-void ento::registerUndefinedAssignmentChecker(CheckerManager &mgr) {
-  mgr.registerChecker<UndefinedAssignmentChecker>();
+void ento::registerUndefinedAssignmentChecker(CheckerManager &mgr,
+                                              StringRef Name) {
+  mgr.registerChecker<UndefinedAssignmentChecker>(Name);
 }

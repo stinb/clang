@@ -3421,10 +3421,11 @@ void BugReporter::FlushReport(BugReport *exampleReport,
 
   OwningPtr<PathDiagnostic>
     D(new PathDiagnostic(exampleReport->getDeclWithIssue(),
-                         exampleReport->getBugType().getName(),
+                         BT.getName(),
                          exampleReport->getDescription(),
                          exampleReport->getShortDescription(/*Fallback=*/false),
                          BT.getCategory(),
+                         BT.getChecker(),
                          exampleReport->getUniqueingLocation(),
                          exampleReport->getUniqueingDecl()));
 
@@ -3474,11 +3475,12 @@ void BugReporter::FlushReport(BugReport *exampleReport,
 void BugReporter::EmitBasicReport(const Decl *DeclWithIssue,
                                   StringRef name,
                                   StringRef category,
+                                  StringRef checker,
                                   StringRef str, PathDiagnosticLocation Loc,
                                   ArrayRef<SourceRange> Ranges) {
 
   // 'BT' is owned by BugReporter.
-  BugType *BT = getBugTypeForName(name, category);
+  BugType *BT = getBugTypeForName(name, category, checker);
   BugReport *R = new BugReport(*BT, str, Loc);
   R->setDeclWithIssue(DeclWithIssue);
   for (ArrayRef<SourceRange>::iterator I = Ranges.begin(), E = Ranges.end();
@@ -3488,14 +3490,15 @@ void BugReporter::EmitBasicReport(const Decl *DeclWithIssue,
 }
 
 BugType *BugReporter::getBugTypeForName(StringRef name,
-                                        StringRef category) {
+                                        StringRef category,
+                                        StringRef checker) {
   SmallString<136> fullDesc;
   llvm::raw_svector_ostream(fullDesc) << name << ":" << category;
   llvm::StringMapEntry<BugType *> &
       entry = StrBugTypes.GetOrCreateValue(fullDesc);
   BugType *BT = entry.getValue();
   if (!BT) {
-    BT = new BugType(name, category);
+    BT = new BugType(name, category, checker);
     entry.setValue(BT);
   }
   return BT;

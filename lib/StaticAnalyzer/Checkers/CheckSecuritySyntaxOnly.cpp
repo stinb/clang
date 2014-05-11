@@ -51,6 +51,7 @@ struct ChecksFilter {
 class WalkAST : public StmtVisitor<WalkAST> {
   BugReporter &BR;
   AnalysisDeclContext* AC;
+  StringRef Checker;
   enum { num_setids = 6 };
   IdentifierInfo *II_setid[num_setids];
 
@@ -58,9 +59,9 @@ class WalkAST : public StmtVisitor<WalkAST> {
   const ChecksFilter &filter;
 
 public:
-  WalkAST(BugReporter &br, AnalysisDeclContext* ac,
+  WalkAST(BugReporter &br, AnalysisDeclContext* ac, StringRef Checker,
           const ChecksFilter &f)
-  : BR(br), AC(ac), II_setid(),
+  : BR(br), AC(ac), Checker(Checker), II_setid(),
     CheckRand(isArc4RandomAvailable(BR.getContext())),
     filter(f) {}
 
@@ -282,7 +283,7 @@ void WalkAST::checkLoopConditionForFloat(const ForStmt *FS) {
   PathDiagnosticLocation FSLoc =
     PathDiagnosticLocation::createBegin(FS, BR.getSourceManager(), AC);
   BR.EmitBasicReport(AC->getDecl(),
-                     bugType, "Security", os.str(),
+                     bugType, "Security", Checker, os.str(),
                      FSLoc, ranges);
 }
 
@@ -318,7 +319,7 @@ void WalkAST::checkCall_gets(const CallExpr *CE, const FunctionDecl *FD) {
     PathDiagnosticLocation::createBegin(CE, BR.getSourceManager(), AC);
   BR.EmitBasicReport(AC->getDecl(),
                      "Potential buffer overflow in call to 'gets'",
-                     "Security",
+                     "Security", Checker,
                      "Call to function 'gets' is extremely insecure as it can "
                      "always result in a buffer overflow",
                      CELoc, CE->getCallee()->getSourceRange());
@@ -358,7 +359,7 @@ void WalkAST::checkCall_getpw(const CallExpr *CE, const FunctionDecl *FD) {
     PathDiagnosticLocation::createBegin(CE, BR.getSourceManager(), AC);
   BR.EmitBasicReport(AC->getDecl(),
                      "Potential buffer overflow in call to 'getpw'",
-                     "Security",
+                     "Security", Checker,
                      "The getpw() function is dangerous as it may overflow the "
                      "provided buffer. It is obsoleted by getpwuid().",
                      CELoc, CE->getCallee()->getSourceRange());
@@ -399,7 +400,7 @@ void WalkAST::checkCall_mktemp(const CallExpr *CE, const FunctionDecl *FD) {
     PathDiagnosticLocation::createBegin(CE, BR.getSourceManager(), AC);
   BR.EmitBasicReport(AC->getDecl(),
                      "Potential insecure temporary file in call 'mktemp'",
-                     "Security",
+                     "Security", Checker,
                      "Call to function 'mktemp' is insecure as it always "
                      "creates or uses insecure temporary file.  Use 'mkstemp' "
                      "instead",
@@ -484,7 +485,7 @@ void WalkAST::checkCall_mkstemp(const CallExpr *CE, const FunctionDecl *FD) {
   }
   out << ')';
   BR.EmitBasicReport(AC->getDecl(),
-                     "Insecure temporary file creation", "Security",
+                     "Insecure temporary file creation", "Security", Checker,
                      out.str(), CELoc, strArg->getSourceRange());
 }
 
@@ -507,7 +508,7 @@ void WalkAST::checkCall_strcpy(const CallExpr *CE, const FunctionDecl *FD) {
   BR.EmitBasicReport(AC->getDecl(),
                      "Potential insecure memory buffer bounds restriction in "
                      "call 'strcpy'",
-                     "Security",
+                     "Security", Checker,
                      "Call to function 'strcpy' is insecure as it does not "
                      "provide bounding of the memory buffer. Replace "
                      "unbounded copy functions with analogous functions that "
@@ -534,7 +535,7 @@ void WalkAST::checkCall_strcat(const CallExpr *CE, const FunctionDecl *FD) {
   BR.EmitBasicReport(AC->getDecl(),
                      "Potential insecure memory buffer bounds restriction in "
                      "call 'strcat'",
-                     "Security",
+                     "Security", Checker,
                      "Call to function 'strcat' is insecure as it does not "
                      "provide bounding of the memory buffer. Replace "
                      "unbounded copy functions with analogous functions that "
@@ -610,7 +611,7 @@ void WalkAST::checkCall_rand(const CallExpr *CE, const FunctionDecl *FD) {
 
   PathDiagnosticLocation CELoc =
     PathDiagnosticLocation::createBegin(CE, BR.getSourceManager(), AC);
-  BR.EmitBasicReport(AC->getDecl(), os1.str(), "Security", os2.str(),
+  BR.EmitBasicReport(AC->getDecl(), os1.str(), "Security", Checker, os2.str(),
                      CELoc, CE->getCallee()->getSourceRange());
 }
 
@@ -636,7 +637,7 @@ void WalkAST::checkCall_random(const CallExpr *CE, const FunctionDecl *FD) {
     PathDiagnosticLocation::createBegin(CE, BR.getSourceManager(), AC);
   BR.EmitBasicReport(AC->getDecl(),
                      "'random' is not a secure random number generator",
-                     "Security",
+                     "Security", Checker,
                      "The 'random' function produces a sequence of values that "
                      "an adversary may be able to predict.  Use 'arc4random' "
                      "instead", CELoc, CE->getCallee()->getSourceRange());
@@ -657,7 +658,7 @@ void WalkAST::checkCall_vfork(const CallExpr *CE, const FunctionDecl *FD) {
   BR.EmitBasicReport(AC->getDecl(),
                      "Potential insecure implementation-specific behavior in "
                      "call 'vfork'",
-                     "Security",
+                     "Security", Checker,
                      "Call to function 'vfork' is insecure as it can lead to "
                      "denial of service situations in the parent process. "
                      "Replace calls to vfork with calls to the safer "
@@ -725,7 +726,7 @@ void WalkAST::checkUncheckedReturnValue(CallExpr *CE) {
 
   PathDiagnosticLocation CELoc =
     PathDiagnosticLocation::createBegin(CE, BR.getSourceManager(), AC);
-  BR.EmitBasicReport(AC->getDecl(), os1.str(), "Security", os2.str(),
+  BR.EmitBasicReport(AC->getDecl(), os1.str(), "Security", Checker, os2.str(),
                      CELoc, CE->getCallee()->getSourceRange());
 }
 
@@ -740,15 +741,16 @@ public:
   
   void checkASTCodeBody(const Decl *D, AnalysisManager& mgr,
                         BugReporter &BR) const {
-    WalkAST walker(BR, mgr.getAnalysisDeclContext(D), filter);
+    WalkAST walker(BR, mgr.getAnalysisDeclContext(D), getTagDescription(),
+                   filter);
     walker.Visit(D->getBody());
   }
 };
 }
 
 #define REGISTER_CHECKER(name) \
-void ento::register##name(CheckerManager &mgr) {\
-  mgr.registerChecker<SecuritySyntaxChecker>()->filter.check_##name = true;\
+void ento::register##name(CheckerManager &mgr, StringRef Name) {\
+  mgr.registerChecker<SecuritySyntaxChecker>(Name)->filter.check_##name = true;\
 }
 
 REGISTER_CHECKER(gets)

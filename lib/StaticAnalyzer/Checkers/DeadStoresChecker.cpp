@@ -130,15 +130,17 @@ class DeadStoreObs : public LiveVariables::Observer {
   OwningPtr<ReachableCode> reachableCode;
   const CFGBlock *currentBlock;
   OwningPtr<llvm::DenseSet<const VarDecl *> > InEH;
+  StringRef Checker;
 
   enum DeadStoreKind { Standard, Enclosing, DeadIncrement, DeadInit };
 
 public:
   DeadStoreObs(const CFG &cfg, ASTContext &ctx,
                BugReporter& br, AnalysisDeclContext* ac, ParentMap& parents,
-               llvm::SmallPtrSet<const VarDecl*, 20> &escaped)
+               llvm::SmallPtrSet<const VarDecl*, 20> &escaped,
+               StringRef Checker)
     : cfg(cfg), Ctx(ctx), BR(br), AC(ac), Parents(parents),
-      Escaped(escaped), currentBlock(0) {}
+      Escaped(escaped), currentBlock(0), Checker(Checker) {}
 
   virtual ~DeadStoreObs() {}
 
@@ -199,7 +201,8 @@ public:
         return;
     }
 
-    BR.EmitBasicReport(AC->getDecl(), BugType, "Dead store", os.str(), L, R);
+    BR.EmitBasicReport(AC->getDecl(), BugType, "Dead store", Checker, os.str(),
+                       L, R);
   }
 
   void CheckVarDecl(const VarDecl *VD, const Expr *Ex, const Expr *Val,
@@ -436,13 +439,14 @@ public:
       ParentMap &pmap = mgr.getParentMap(D);
       FindEscaped FS;
       cfg.VisitBlockStmts(FS);
-      DeadStoreObs A(cfg, BR.getContext(), BR, AC, pmap, FS.Escaped);
+      DeadStoreObs A(cfg, BR.getContext(), BR, AC, pmap, FS.Escaped,
+                     getTagDescription());
       L->runOnAllBlocks(A);
     }
   }
 };
 }
 
-void ento::registerDeadStoresChecker(CheckerManager &mgr) {
-  mgr.registerChecker<DeadStoresChecker>();
+void ento::registerDeadStoresChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<DeadStoresChecker>(Name);
 }

@@ -30,6 +30,7 @@ namespace {
 class WalkAST : public StmtVisitor<WalkAST> {
   BugReporter &BR;
   AnalysisDeclContext *AC;
+  StringRef Checker;
 
   typedef const CallExpr * WorkListUnit;
   typedef SmallVector<WorkListUnit, 20> DFSWorkList;
@@ -58,9 +59,10 @@ class WalkAST : public StmtVisitor<WalkAST> {
   const CallExpr *visitingCallExpr;
   
 public:
-  WalkAST(BugReporter &br, AnalysisDeclContext *ac)
+  WalkAST(BugReporter &br, AnalysisDeclContext *ac, StringRef Checker)
     : BR(br),
       AC(ac),
+      Checker(Checker),
       visitingCallExpr(0) {}
   
   bool hasWork() const { return !WList.empty(); }
@@ -190,7 +192,7 @@ void WalkAST::ReportVirtualCall(const CallExpr *CE, bool isPure) {
     BR.EmitBasicReport(AC->getDecl(),
                        "Call pure virtual function during construction or "
                        "Destruction",
-                       "Cplusplus",
+                       "Cplusplus", Checker,
                        os.str(), CELoc, R);
     return;
   }
@@ -200,7 +202,7 @@ void WalkAST::ReportVirtualCall(const CallExpr *CE, bool isPure) {
     BR.EmitBasicReport(AC->getDecl(),
                        "Call virtual function during construction or "
                        "Destruction",
-                       "Cplusplus",
+                       "Cplusplus", Checker,
                        os.str(), CELoc, R);
     return;
   }
@@ -215,7 +217,7 @@ class VirtualCallChecker : public Checker<check::ASTDecl<CXXRecordDecl> > {
 public:
   void checkASTDecl(const CXXRecordDecl *RD, AnalysisManager& mgr,
                     BugReporter &BR) const {
-    WalkAST walker(BR, mgr.getAnalysisDeclContext(RD));
+    WalkAST walker(BR, mgr.getAnalysisDeclContext(RD), getTagDescription());
 
     // Check the constructors.
     for (CXXRecordDecl::ctor_iterator I = RD->ctor_begin(), E = RD->ctor_end();
@@ -237,6 +239,6 @@ public:
 };
 }
 
-void ento::registerVirtualCallChecker(CheckerManager &mgr) {
-  mgr.registerChecker<VirtualCallChecker>();
+void ento::registerVirtualCallChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<VirtualCallChecker>(Name);
 }

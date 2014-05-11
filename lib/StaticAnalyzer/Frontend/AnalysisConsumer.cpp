@@ -127,6 +127,7 @@ public:
         else
           Out << *I;
       }
+      Out << " [" << PD->getChecker() << "]";
       Out.flush();
       unsigned ErrorDiag = Diag.getCustomDiagID(DiagnosticsEngine::Warning,
                                                 TmpStr);

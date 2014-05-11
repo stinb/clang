@@ -40,7 +40,8 @@ static bool AreTypesCompatible(QualType Derived, QualType Ancestor,
 static void CompareReturnTypes(const ObjCMethodDecl *MethDerived,
                                const ObjCMethodDecl *MethAncestor,
                                BugReporter &BR, ASTContext &Ctx,
-                               const ObjCImplementationDecl *ID) {
+                               const ObjCImplementationDecl *ID,
+                               StringRef Checker) {
 
   QualType ResDerived  = MethDerived->getResultType();
   QualType ResAncestor = MethAncestor->getResultType();
@@ -71,13 +72,13 @@ static void CompareReturnTypes(const ObjCMethodDecl *MethDerived,
 
     BR.EmitBasicReport(MethDerived,
                        "Incompatible instance method return type",
-                       categories::CoreFoundationObjectiveC,
+                       categories::CoreFoundationObjectiveC, Checker,
                        os.str(), MethDLoc);
   }
 }
 
 static void CheckObjCInstMethSignature(const ObjCImplementationDecl *ID,
-                                       BugReporter& BR) {
+                                       BugReporter& BR, StringRef Checker) {
 
   const ObjCInterfaceDecl *D = ID->getClassInterface();
   const ObjCInterfaceDecl *C = D->getSuperClass();
@@ -118,7 +119,7 @@ static void CheckObjCInstMethSignature(const ObjCImplementationDecl *ID,
       ObjCMethodDecl *MethDerived = MI->second;
       MI->second = 0;
 
-      CompareReturnTypes(MethDerived, M, BR, Ctx, ID);
+      CompareReturnTypes(MethDerived, M, BR, Ctx, ID, Checker);
     }
 
     C = C->getSuperClass();
@@ -135,11 +136,11 @@ class ObjCMethSigsChecker : public Checker<
 public:
   void checkASTDecl(const ObjCImplementationDecl *D, AnalysisManager& mgr,
                     BugReporter &BR) const {
-    CheckObjCInstMethSignature(D, BR);
+    CheckObjCInstMethSignature(D, BR, getTagDescription());
   }
 };
 }
 
-void ento::registerObjCMethSigsChecker(CheckerManager &mgr) {
-  mgr.registerChecker<ObjCMethSigsChecker>();
+void ento::registerObjCMethSigsChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<ObjCMethSigsChecker>(Name);
 }

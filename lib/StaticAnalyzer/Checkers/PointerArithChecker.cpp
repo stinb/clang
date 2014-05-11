@@ -56,7 +56,7 @@ void PointerArithChecker::checkPreStmt(const BinaryOperator *B,
         BT.reset(new BuiltinBug("Dangerous pointer arithmetic",
                             "Pointer arithmetic done on non-array variables "
                             "means reliance on memory layout, which is "
-                            "dangerous."));
+                            "dangerous.", getTagDescription()));
       BugReport *R = new BugReport(*BT, BT->getDescription(), N);
       R->addRange(B->getSourceRange());
       C.emitReport(R);
@@ -64,6 +64,6 @@ void PointerArithChecker::checkPreStmt(const BinaryOperator *B,
   }
 }
 
-void ento::registerPointerArithChecker(CheckerManager &mgr) {
-  mgr.registerChecker<PointerArithChecker>();
+void ento::registerPointerArithChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<PointerArithChecker>(Name);
 }

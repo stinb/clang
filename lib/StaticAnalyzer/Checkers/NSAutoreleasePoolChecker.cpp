@@ -60,7 +60,7 @@ void NSAutoreleasePoolChecker::checkPreObjCMessage(const ObjCMethodCall &msg,
 
   if (!BT)
     BT.reset(new BugType("Use -drain instead of -release",
-                         "API Upgrade (Apple)"));
+                         "API Upgrade (Apple)", getTagDescription()));
 
   ExplodedNode *N = C.addTransition();
   if (!N) {
@@ -74,7 +74,7 @@ void NSAutoreleasePoolChecker::checkPreObjCMessage(const ObjCMethodCall &msg,
   C.emitReport(Report);
 }
 
-void ento::registerNSAutoreleasePoolChecker(CheckerManager &mgr) {
+void ento::registerNSAutoreleasePoolChecker(CheckerManager &mgr, StringRef Name) {
   if (mgr.getLangOpts().getGC() != LangOptions::NonGC)
-    mgr.registerChecker<NSAutoreleasePoolChecker>();
+    mgr.registerChecker<NSAutoreleasePoolChecker>(Name);
 }

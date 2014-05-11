@@ -55,13 +55,13 @@ void FixedAddressChecker::checkPreStmt(const BinaryOperator *B,
       BT.reset(new BuiltinBug("Use fixed address", 
                           "Using a fixed address is not portable because that "
                           "address will probably not be valid in all "
-                          "environments or platforms."));
+                          "environments or platforms.", getTagDescription()));
     BugReport *R = new BugReport(*BT, BT->getDescription(), N);
     R->addRange(B->getRHS()->getSourceRange());
     C.emitReport(R);
   }
 }
 
-void ento::registerFixedAddressChecker(CheckerManager &mgr) {
-  mgr.registerChecker<FixedAddressChecker>();
+void ento::registerFixedAddressChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<FixedAddressChecker>(Name);
 }

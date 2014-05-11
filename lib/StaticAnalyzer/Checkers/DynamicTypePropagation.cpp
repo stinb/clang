@@ -276,6 +276,6 @@ DynamicTypePropagation::getBetterObjCType(const Expr *CastE,
   return 0;
 }
 
-void ento::registerDynamicTypePropagation(CheckerManager &mgr) {
-  mgr.registerChecker<DynamicTypePropagation>();
+void ento::registerDynamicTypePropagation(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<DynamicTypePropagation>(Name);
 }

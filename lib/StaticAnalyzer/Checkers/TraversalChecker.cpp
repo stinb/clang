@@ -54,8 +54,8 @@ void TraversalDumper::checkEndFunction(CheckerContext &C) const {
   llvm::outs() << "--END FUNCTION--\n";
 }
 
-void ento::registerTraversalDumper(CheckerManager &mgr) {
-  mgr.registerChecker<TraversalDumper>();
+void ento::registerTraversalDumper(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<TraversalDumper>(Name);
 }
 
 //------------------------------------------------------------------------------
@@ -102,6 +102,6 @@ void CallDumper::checkPostCall(const CallEvent &Call, CheckerContext &C) const {
     llvm::outs() << "Returning " << C.getSVal(CallE) << "\n";
 }
 
-void ento::registerCallDumper(CheckerManager &mgr) {
-  mgr.registerChecker<CallDumper>();
+void ento::registerCallDumper(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<CallDumper>(Name);
 }

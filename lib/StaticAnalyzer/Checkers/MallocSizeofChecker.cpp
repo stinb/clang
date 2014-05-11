@@ -237,7 +237,7 @@ public:
                 BR.getSourceManager(), ADC);
 
         BR.EmitBasicReport(D, "Allocator sizeof operand mismatch",
-            categories::UnixAPI,
+            categories::UnixAPI, getTagDescription(),
             OS.str(),
             L, Ranges);
       }
@@ -247,6 +247,6 @@ public:
 
 }
 
-void ento::registerMallocSizeofChecker(CheckerManager &mgr) {
-  mgr.registerChecker<MallocSizeofChecker>();
+void ento::registerMallocSizeofChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<MallocSizeofChecker>(Name);
 }

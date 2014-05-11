@@ -42,8 +42,8 @@ public:
 };
 }
 
-void ento::registerDominatorsTreeDumper(CheckerManager &mgr) {
-  mgr.registerChecker<DominatorsTreeDumper>();
+void ento::registerDominatorsTreeDumper(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<DominatorsTreeDumper>(Name);
 }
 
 //===----------------------------------------------------------------------===//
@@ -62,8 +62,8 @@ public:
 };
 }
 
-void ento::registerLiveVariablesDumper(CheckerManager &mgr) {
-  mgr.registerChecker<LiveVariablesDumper>();
+void ento::registerLiveVariablesDumper(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<LiveVariablesDumper>(Name);
 }
 
 //===----------------------------------------------------------------------===//
@@ -82,8 +82,8 @@ public:
 };
 }
 
-void ento::registerCFGViewer(CheckerManager &mgr) {
-  mgr.registerChecker<CFGViewer>();
+void ento::registerCFGViewer(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<CFGViewer>(Name);
 }
 
 //===----------------------------------------------------------------------===//
@@ -103,8 +103,8 @@ public:
 };
 }
 
-void ento::registerCFGDumper(CheckerManager &mgr) {
-  mgr.registerChecker<CFGDumper>();
+void ento::registerCFGDumper(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<CFGDumper>(Name);
 }
 
 //===----------------------------------------------------------------------===//
@@ -123,8 +123,8 @@ public:
 };
 }
 
-void ento::registerCallGraphViewer(CheckerManager &mgr) {
-  mgr.registerChecker<CallGraphViewer>();
+void ento::registerCallGraphViewer(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<CallGraphViewer>(Name);
 }
 
 //===----------------------------------------------------------------------===//
@@ -143,8 +143,8 @@ public:
 };
 }
 
-void ento::registerCallGraphDumper(CheckerManager &mgr) {
-  mgr.registerChecker<CallGraphDumper>();
+void ento::registerCallGraphDumper(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<CallGraphDumper>(Name);
 }
 
 
@@ -182,8 +182,8 @@ public:
 };
 }
 
-void ento::registerConfigDumper(CheckerManager &mgr) {
-  mgr.registerChecker<ConfigDumper>();
+void ento::registerConfigDumper(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<ConfigDumper>(Name);
 }
 
 //===----------------------------------------------------------------------===//
@@ -201,6 +201,6 @@ public:
 
 }
 
-void ento::registerExplodedGraphViewer(CheckerManager &mgr) {
-  mgr.registerChecker<ExplodedGraphViewer>();
+void ento::registerExplodedGraphViewer(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<ExplodedGraphViewer>(Name);
 }

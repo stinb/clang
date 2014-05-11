@@ -16,7 +16,7 @@ namespace clang {
 namespace ento {
 
 /// Register the checker which evaluates CString API calls.
-void registerCStringCheckerBasic(CheckerManager &Mgr);
+void registerCStringCheckerBasic(CheckerManager &Mgr, llvm::StringRef Name);
 
 }}
 #endif /* INTERCHECKERAPI_H_ */

@@ -35,8 +35,9 @@ namespace {
 class FindIdenticalExprVisitor
     : public RecursiveASTVisitor<FindIdenticalExprVisitor> {
 public:
-  explicit FindIdenticalExprVisitor(BugReporter &B, AnalysisDeclContext *A)
-      : BR(B), AC(A) {}
+  explicit FindIdenticalExprVisitor(BugReporter &B, AnalysisDeclContext *A,
+                                    StringRef Checker)
+      : BR(B), AC(A), Checker(Checker) {}
   // FindIdenticalExprVisitor only visits nodes
   // that are binary operators.
   bool VisitBinaryOperator(const BinaryOperator *B);
@@ -44,6 +45,7 @@ public:
 private:
   BugReporter &BR;
   AnalysisDeclContext *AC;
+  StringRef Checker;
 };
 } // end anonymous namespace
 
@@ -111,7 +113,7 @@ bool FindIdenticalExprVisitor::VisitBinaryOperator(const BinaryOperator *B) {
     else
       Message = "comparison of identical expressions always evaluates to false";
     BR.EmitBasicReport(AC->getDecl(), "Compare of identical expressions",
-                       categories::LogicError, Message, ELoc);
+                       categories::LogicError, Checker, Message, ELoc);
   }
   // We want to visit ALL nodes (subexpressions of binary comparison
   // expressions too) that contains comparison operators.
@@ -215,12 +217,13 @@ class FindIdenticalExprChecker : public Checker<check::ASTCodeBody> {
 public:
   void checkASTCodeBody(const Decl *D, AnalysisManager &Mgr,
                         BugReporter &BR) const {
-    FindIdenticalExprVisitor Visitor(BR, Mgr.getAnalysisDeclContext(D));
+    FindIdenticalExprVisitor Visitor(BR, Mgr.getAnalysisDeclContext(D),
+                                     getTagDescription());
     Visitor.TraverseDecl(const_cast<Decl *>(D));
   }
 };
 } // end anonymous namespace
 
-void ento::registerIdenticalExprChecker(CheckerManager &Mgr) {
-  Mgr.registerChecker<FindIdenticalExprChecker>();
+void ento::registerIdenticalExprChecker(CheckerManager &Mgr, StringRef Name) {
+  Mgr.registerChecker<FindIdenticalExprChecker>(Name);
 }

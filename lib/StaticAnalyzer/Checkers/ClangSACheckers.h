@@ -17,6 +17,10 @@
 
 #include "clang/StaticAnalyzer/Core/BugReporter/CommonBugCategories.h"
 
+namespace llvm {
+class StringRef;
+}
+
 namespace clang {
 
 namespace ento {
@@ -25,7 +29,7 @@ class CheckerRegistry;
 
 #define GET_CHECKERS
 #define CHECKER(FULLNAME,CLASS,CXXFILE,HELPTEXT,GROUPINDEX,HIDDEN)    \
-  void register##CLASS(CheckerManager &mgr);
+  void register##CLASS(CheckerManager &mgr, llvm::StringRef);
 #include "Checkers.inc"
 #undef CHECKER
 #undef GET_CHECKERS

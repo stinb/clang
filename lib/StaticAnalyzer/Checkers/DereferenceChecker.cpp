@@ -97,7 +97,8 @@ void DereferenceChecker::reportBug(ProgramStateRef State, const Stmt *S,
   // We know that 'location' cannot be non-null.  This is what
   // we call an "explicit" null dereference.
   if (!BT_null)
-    BT_null.reset(new BuiltinBug("Dereference of null pointer"));
+    BT_null.reset(new BuiltinBug("Dereference of null pointer",
+                                 getTagDescription()));
 
   SmallString<100> buf;
   llvm::raw_svector_ostream os(buf);
@@ -180,7 +181,8 @@ void DereferenceChecker::checkLocation(SVal l, bool isLoad, const Stmt* S,
   if (l.isUndef()) {
     if (ExplodedNode *N = C.generateSink()) {
       if (!BT_undef)
-        BT_undef.reset(new BuiltinBug("Dereference of undefined pointer value"));
+        BT_undef.reset(new BuiltinBug("Dereference of undefined pointer value",
+                                      getTagDescription()));
 
       BugReport *report =
         new BugReport(*BT_undef, BT_undef->getDescription(), N);
@@ -276,6 +278,6 @@ void DereferenceChecker::checkBind(SVal L, SVal V, const Stmt *S,
   C.addTransition(State, this);
 }
 
-void ento::registerDereferenceChecker(CheckerManager &mgr) {
-  mgr.registerChecker<DereferenceChecker>();
+void ento::registerDereferenceChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<DereferenceChecker>(Name);
 }

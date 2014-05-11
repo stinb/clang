@@ -65,10 +65,10 @@ private:
 //===----------------------------------------------------------------------===//
 
 static inline void LazyInitialize(OwningPtr<BugType> &BT,
-                                  const char *name) {
+                                  StringRef name, StringRef Checker) {
   if (BT)
     return;
-  BT.reset(new BugType(name, categories::UnixAPI));
+  BT.reset(new BugType(name, categories::UnixAPI, Checker));
 }
 
 //===----------------------------------------------------------------------===//
@@ -131,7 +131,7 @@ void UnixAPIChecker::CheckOpen(CheckerContext &C, const CallExpr *CE) const {
     if (!N)
       return;
 
-    LazyInitialize(BT_open, "Improper use of 'open'");
+    LazyInitialize(BT_open, "Improper use of 'open'", getTagDescription());
 
     BugReport *report =
       new BugReport(*BT_open,
@@ -179,7 +179,8 @@ void UnixAPIChecker::CheckPthreadOnce(CheckerContext &C,
   if (isa<VarRegion>(R) && isa<StackLocalsSpaceRegion>(R->getMemorySpace()))
     os << "  Perhaps you intended to declare the variable as 'static'?";
 
-  LazyInitialize(BT_pthreadOnce, "Improper use of 'pthread_once'");
+  LazyInitialize(BT_pthreadOnce, "Improper use of 'pthread_once'",
+                 getTagDescription());
 
   BugReport *report = new BugReport(*BT_pthreadOnce, os.str(), N);
   report->addRange(CE->getArg(0)->getSourceRange());
@@ -217,7 +218,8 @@ bool UnixAPIChecker::ReportZeroByteAllocation(CheckerContext &C,
     return false;
 
   LazyInitialize(BT_mallocZero,
-    "Undefined allocation of 0 bytes (CERT MEM04-C; CWE-131)");
+    "Undefined allocation of 0 bytes (CERT MEM04-C; CWE-131)",
+    getTagDescription());
 
   SmallString<256> S;
   llvm::raw_svector_ostream os(S);    
@@ -358,6 +360,6 @@ void UnixAPIChecker::checkPreStmt(const CallExpr *CE,
 // Registration.
 //===----------------------------------------------------------------------===//
 
-void ento::registerUnixAPIChecker(CheckerManager &mgr) {
-  mgr.registerChecker<UnixAPIChecker>();
+void ento::registerUnixAPIChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<UnixAPIChecker>(Name);
 }

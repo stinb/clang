@@ -64,13 +64,14 @@ void PointerSubChecker::checkPreStmt(const BinaryOperator *B,
     if (!BT)
       BT.reset(new BuiltinBug("Pointer subtraction", 
                           "Subtraction of two pointers that do not point to "
-                          "the same memory chunk may cause incorrect result."));
+                          "the same memory chunk may cause incorrect result.",
+                          getTagDescription()));
     BugReport *R = new BugReport(*BT, BT->getDescription(), N);
     R->addRange(B->getSourceRange());
     C.emitReport(R);
   }
 }
 
-void ento::registerPointerSubChecker(CheckerManager &mgr) {
-  mgr.registerChecker<PointerSubChecker>();
+void ento::registerPointerSubChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<PointerSubChecker>(Name);
 }

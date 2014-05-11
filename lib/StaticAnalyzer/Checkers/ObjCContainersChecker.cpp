@@ -34,7 +34,8 @@ class ObjCContainersChecker : public Checker< check::PreStmt<CallExpr>,
   inline void initBugType() const {
     if (!BT)
       BT.reset(new BugType("CFArray API",
-                           categories::CoreFoundationObjectiveC));
+                           categories::CoreFoundationObjectiveC,
+                           getTagDescription()));
   }
 
   inline SymbolRef getArraySym(const Expr *E, CheckerContext &C) const {
@@ -146,6 +147,6 @@ void ObjCContainersChecker::checkPreStmt(const CallExpr *CE,
 }
 
 /// Register checker.
-void ento::registerObjCContainersChecker(CheckerManager &mgr) {
-  mgr.registerChecker<ObjCContainersChecker>();
+void ento::registerObjCContainersChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<ObjCContainersChecker>(Name);
 }

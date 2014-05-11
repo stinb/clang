@@ -21,7 +21,7 @@ namespace ento {
 //===----------------------------------------------------------------------===//
 
 class AnalysisAction : public ASTFrontendAction {
-protected:
+public:
   virtual ASTConsumer *CreateASTConsumer(CompilerInstance &CI,
                                          StringRef InFile);
 };

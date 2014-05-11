@@ -67,7 +67,8 @@ void ArrayBoundChecker::checkLocation(SVal l, bool isLoad, const Stmt* LoadS,
   
     if (!BT)
       BT.reset(new BuiltinBug("Out-of-bound array access",
-                       "Access out-of-bound array element (buffer overflow)"));
+                       "Access out-of-bound array element (buffer overflow)",
+                       getTagDescription()));
 
     // FIXME: It would be nice to eventually make this diagnostic more clear,
     // e.g., by referencing the original declaration or by saying *why* this
@@ -87,6 +88,6 @@ void ArrayBoundChecker::checkLocation(SVal l, bool isLoad, const Stmt* LoadS,
   C.addTransition(StInBound);
 }
 
-void ento::registerArrayBoundChecker(CheckerManager &mgr) {
-  mgr.registerChecker<ArrayBoundChecker>();
+void ento::registerArrayBoundChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<ArrayBoundChecker>(Name);
 }

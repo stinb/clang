@@ -37,7 +37,7 @@ void DivZeroChecker::reportBug(const char *Msg,
                                CheckerContext &C) const {
   if (ExplodedNode *N = C.generateSink(StateZero)) {
     if (!BT)
-      BT.reset(new BuiltinBug("Division by zero"));
+      BT.reset(new BuiltinBug("Division by zero", getTagDescription()));
 
     BugReport *R = new BugReport(*BT, Msg, N);
     bugreporter::trackNullOrUndefValue(N, bugreporter::GetDenomExpr(N), *R);
@@ -87,6 +87,6 @@ void DivZeroChecker::checkPreStmt(const BinaryOperator *B,
   C.addTransition(stateNotZero);
 }
 
-void ento::registerDivZeroChecker(CheckerManager &mgr) {
-  mgr.registerChecker<DivZeroChecker>();
+void ento::registerDivZeroChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<DivZeroChecker>(Name);
 }

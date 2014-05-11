@@ -94,6 +94,6 @@ bool BuiltinFunctionChecker::evalCall(const CallExpr *CE,
   }
 }
 
-void ento::registerBuiltinFunctionChecker(CheckerManager &mgr) {
-  mgr.registerChecker<BuiltinFunctionChecker>();
+void ento::registerBuiltinFunctionChecker(CheckerManager &mgr, StringRef Name) {
+  mgr.registerChecker<BuiltinFunctionChecker>(Name);
 }

@@ -34,7 +34,8 @@ void BoolAssignmentChecker::emitReport(ProgramStateRef state,
                                        CheckerContext &C) const {
   if (ExplodedNode *N = C.addTransition(state)) {
     if (!BT)
-      BT.reset(new BuiltinBug("Assignment of a non-Boolean value"));    
+      BT.reset(new BuiltinBug("Assignment of a non-Boolean value",
+                              getTagDescription()));
     C.emitReport(new BugReport(*BT, BT->getDescription(), N));
   }
 }
@@ -152,6 +153,6 @@ void BoolAssignmentChecker::checkBind(SVal loc, SVal val, const Stmt *S,
   assert(stateLE == state);
 }
 
-void ento::registerBoolAssignmentChecker(CheckerManager &mgr) {
-    mgr.registerChecker<BoolAssignmentChecker>();
+void ento::registerBoolAssignmentChecker(CheckerManager &mgr, StringRef Name) {
+    mgr.registerChecker<BoolAssignmentChecker>(Name);
 }
