@@ -870,7 +870,8 @@ void Preprocessor::Lex(Token &Result) {
       ReturnedToken = CurLexer->Lex(Result);
       break;
     case CLK_TokenLexer:
-      ReturnedToken = CurTokenLexer->Lex(Result);
+      ReturnedToken = CurTokenLexer->Lex(Result, Callbacks.get(),
+                                         InMacroArgs || InMacroArgPreExpansion);
       break;
     case CLK_CachingLexer:
       CachingLex(Result);
