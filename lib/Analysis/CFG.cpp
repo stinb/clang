@@ -3052,16 +3052,16 @@ CFGBlock *CFGBuilder::VisitCXXForRangeStmt(CXXForRangeStmt *S) {
     // continue statements.
     Block = 0;
     Succ = addStmt(S->getInc());
-    ContinueJumpTarget = JumpTarget(Succ, ContinueScopePos);
+    if (badCFG)
+      return 0;
 
     // The starting block for the loop increment is the block that should
     // represent the 'loop target' for looping back to the start of the loop.
+    ContinueJumpTarget = JumpTarget(Succ, ContinueScopePos);
     ContinueJumpTarget.block->setLoopTarget(S);
 
     // Finish up the increment block and prepare to start the loop body.
     assert(Block);
-    if (badCFG)
-      return 0;
     Block = 0;
 
 
