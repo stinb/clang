@@ -78,7 +78,7 @@ public:
   ///
   /// \returns true to indicate that the preprocessor should attempt to recover
   /// by adding \p RecoveryPath as a header search path.
-  virtual bool FileNotFound(SourceLocation HashLoc, StringRef FileName,
+  virtual bool FileNotFound(SourceLocation HashLoc, StringRef &FileName,
                             SmallVectorImpl<char> &RecoveryPath) {
     return false;
   }
@@ -350,7 +350,7 @@ public:
     Second->FileSkipped(ParentFile, FilenameTok, FileType);
   }
 
-  virtual bool FileNotFound(SourceLocation HashLoc, StringRef FileName,
+  virtual bool FileNotFound(SourceLocation HashLoc, StringRef &FileName,
                             SmallVectorImpl<char> &RecoveryPath) {
     return First->FileNotFound(HashLoc, FileName, RecoveryPath) ||
            Second->FileNotFound(HashLoc, FileName, RecoveryPath);
