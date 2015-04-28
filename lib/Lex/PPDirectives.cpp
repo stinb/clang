@@ -1491,15 +1491,15 @@ void Preprocessor::HandleIncludeDirective(SourceLocation HashLoc,
       HeaderInfo.getHeaderSearchOpts().ModuleMaps ? &SuggestedModule : 0);
 
   if (Callbacks) {
-    if (!File) {
+    if (!File && !LookupFrom) {
       // Give the clients a chance to recover.
       SmallString<128> RecoveryPath;
       if (Callbacks->FileNotFound(HashLoc, Filename, RecoveryPath)) {
         if (const DirectoryEntry *DE = FileMgr.getDirectory(RecoveryPath)) {
           // Add the recovery path to the list of search paths.
-          DirectoryLookup DL(DE, SrcMgr::C_User, false);
-          HeaderInfo.AddSearchPath(DL, isAngled);
-          
+          HeaderInfo.AddSearchPath(DirectoryLookup(DE, SrcMgr::C_User, false),
+                                   isAngled);
+
           // Try the lookup again, skipping the cache.
           File = LookupFile(FilenameLoc, Filename, isAngled, LookupFrom, CurDir,
                             0, 0, HeaderInfo.getHeaderSearchOpts().ModuleMaps
@@ -1509,7 +1509,7 @@ void Preprocessor::HandleIncludeDirective(SourceLocation HashLoc,
         }
       }
     }
-    
+
     if (!SuggestedModule || !getLangOpts().Modules) {
       // Notify the callback object that we've seen an inclusion directive.
       Callbacks->InclusionDirective(HashLoc, IncludeTok, Filename, isAngled,
