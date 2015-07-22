@@ -52,6 +52,7 @@ HeaderSearch::HeaderSearch(IntrusiveRefCntPtr<HeaderSearchOptions> HSOpts,
 {
   AngledDirIdx = 0;
   SystemDirIdx = 0;
+  AdditionalDirIdx = 0;
   NoCurDirSearch = false;
 
   ExternalLookup = 0;
