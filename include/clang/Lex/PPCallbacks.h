@@ -318,8 +318,12 @@ public:
   virtual void Endif(SourceLocation Loc, SourceLocation IfLoc) {
   }
 
-  /// Lex -- Called whenever a new token is lexed.
-  virtual void Lex(const Token &Tok) {
+  /// Called when a new token is expanded from a macro.
+  virtual void MacroTokenExpanded(const Token &Tok) {
+  }
+
+  /// Called when a macro expansion finishes.
+  virtual void MacroExpansionFinished() {
   }
 };
 

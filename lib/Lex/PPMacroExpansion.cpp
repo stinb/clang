@@ -357,6 +357,12 @@ bool Preprocessor::HandleMacroExpandedIdentifier(Token &Identifier,
         }
     }
 
+    // Notify callbacks of the single token expansion.
+    if (Callbacks) {
+      Callbacks->MacroTokenExpanded(Identifier);
+      Callbacks->MacroExpansionFinished();
+    }
+
     // Since this is not an identifier token, it can't be macro expanded, so
     // we're done.
     ++NumFastMacroExpanded;

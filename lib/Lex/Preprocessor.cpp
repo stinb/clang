@@ -717,7 +717,7 @@ void Preprocessor::Lex(Token &Result) {
       ReturnedToken = CurPTHLexer->Lex(Result);
       break;
     case CLK_TokenLexer:
-      ReturnedToken = CurTokenLexer->Lex(Result);
+      ReturnedToken = CurTokenLexer->Lex(Result, Callbacks);
       break;
     case CLK_CachingLexer:
       CachingLex(Result);
@@ -729,9 +729,6 @@ void Preprocessor::Lex(Token &Result) {
       break;
     }
   } while (!ReturnedToken);
-
-  if (Callbacks && !InMacroArgs)
-    Callbacks->Lex(Result);
 
   LastTokenWasAt = Result.is(tok::at);
 }

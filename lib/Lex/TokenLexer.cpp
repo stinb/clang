@@ -416,12 +416,16 @@ void TokenLexer::ExpandFunctionArguments() {
 
 /// Lex - Lex and return a token from this macro stream.
 ///
-bool TokenLexer::Lex(Token &Tok) {
+bool TokenLexer::Lex(Token &Tok, PPCallbacks *Callbacks) {
   // Lexing off the end of the macro, pop this macro off the expansion stack.
   if (isAtEnd()) {
     // If this is a macro (not a token stream), mark the macro enabled now
     // that it is no longer being expanded.
     if (Macro) Macro->EnableMacro();
+
+    // Notify callbacks of the end of the macro expansion.
+    if (Callbacks && Macro)
+      Callbacks->MacroExpansionFinished();
 
     Tok.startToken();
     Tok.setFlagValue(Token::StartOfLine , AtStartOfLine);
@@ -500,6 +504,10 @@ bool TokenLexer::Lex(Token &Tok) {
     if (!DisableMacroExpansion && II->isHandleIdentifierCase())
       return PP.HandleIdentifier(Tok);
   }
+
+  // Notify callbacks of the token expansion.
+  if (Callbacks && Macro)
+    Callbacks->MacroTokenExpanded(Tok);
 
   // Otherwise, return a normal token.
   return true;
