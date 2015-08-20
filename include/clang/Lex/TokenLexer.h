@@ -137,7 +137,7 @@ public:
   unsigned isNextTokenLParen() const;
 
   /// Lex - Lex and return a token from this macro stream.
-  bool Lex(Token &Tok, PPCallbacks *Callbacks);
+  bool Lex(Token &Tok, PPCallbacks *Callbacks, bool InMacroArgs);
 
   /// isParsingPreprocessorDirective - Return true if we are in the middle of a
   /// preprocessor directive.

@@ -416,7 +416,7 @@ void TokenLexer::ExpandFunctionArguments() {
 
 /// Lex - Lex and return a token from this macro stream.
 ///
-bool TokenLexer::Lex(Token &Tok, PPCallbacks *Callbacks) {
+bool TokenLexer::Lex(Token &Tok, PPCallbacks *Callbacks, bool InMacroArgs) {
   // Lexing off the end of the macro, pop this macro off the expansion stack.
   if (isAtEnd()) {
     // If this is a macro (not a token stream), mark the macro enabled now
@@ -506,7 +506,7 @@ bool TokenLexer::Lex(Token &Tok, PPCallbacks *Callbacks) {
   }
 
   // Notify callbacks of the token expansion.
-  if (Callbacks && Macro)
+  if (Callbacks && !InMacroArgs && Macro)
     Callbacks->MacroTokenExpanded(Tok);
 
   // Otherwise, return a normal token.
