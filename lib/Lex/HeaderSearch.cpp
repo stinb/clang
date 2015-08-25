@@ -52,7 +52,6 @@ HeaderSearch::HeaderSearch(IntrusiveRefCntPtr<HeaderSearchOptions> HSOpts,
 {
   AngledDirIdx = 0;
   SystemDirIdx = 0;
-  AdditionalDirIdx = 0;
   NoCurDirSearch = false;
 
   ExternalLookup = 0;
@@ -503,8 +502,7 @@ const FileEntry *HeaderSearch::LookupFile(
     const FileEntry *CurFileEnt,
     SmallVectorImpl<char> *SearchPath,
     SmallVectorImpl<char> *RelativePath,
-    ModuleMap::KnownHeader *SuggestedModule,
-    bool SkipCache)
+    ModuleMap::KnownHeader *SuggestedModule)
 {
   if (!HSOpts->ModuleMapFiles.empty()) {
     // Preload all explicitly specified module map files. This enables modules
@@ -606,7 +604,7 @@ const FileEntry *HeaderSearch::LookupFile(
   // If the entry has been previously looked up, the first value will be
   // non-zero.  If the value is equal to i (the start point of our search), then
   // this is a matching hit.
-  if (!SkipCache && CacheLookup.first == i+1) {
+  if (CacheLookup.first == i+1) {
     // Skip querying potentially lots of directories for this lookup.
     i = CacheLookup.second;
   } else {

@@ -622,8 +622,7 @@ const FileEntry *Preprocessor::LookupFile(
     const DirectoryLookup *&CurDir,
     SmallVectorImpl<char> *SearchPath,
     SmallVectorImpl<char> *RelativePath,
-    ModuleMap::KnownHeader *SuggestedModule,
-    bool SkipCache) {
+    ModuleMap::KnownHeader *SuggestedModule) {
   // If the header lookup mechanism may be relative to the current file, pass in
   // info about where the current file is.
   const FileEntry *CurFileEnt = 0;
@@ -647,7 +646,7 @@ const FileEntry *Preprocessor::LookupFile(
   CurDir = CurDirLookup;
   const FileEntry *FE = HeaderInfo.LookupFile(
       Filename, isAngled, FromDir, CurDir, CurFileEnt,
-      SearchPath, RelativePath, SuggestedModule, SkipCache);
+      SearchPath, RelativePath, SuggestedModule);
   if (FE) {
     if (SuggestedModule)
       verifyModuleInclude(FilenameLoc, Filename, FE);
@@ -1494,19 +1493,8 @@ void Preprocessor::HandleIncludeDirective(SourceLocation HashLoc,
     if (!File) {
       // Give the clients a chance to recover.
       SmallString<128> RecoveryPath;
-      if (Callbacks->FileNotFound(HashLoc, Filename, RecoveryPath)) {
-        if (const DirectoryEntry *DE = FileMgr.getDirectory(RecoveryPath)) {
-          // Add the recovery path to the list of search paths.
-          HeaderInfo.AddSearchPath(DirectoryLookup(DE, SrcMgr::C_User, false));
-
-          // Try the lookup again, skipping the cache.
-          File = LookupFile(FilenameLoc, Filename, isAngled, LookupFrom, CurDir,
-                            0, 0, HeaderInfo.getHeaderSearchOpts().ModuleMaps
-                                      ? &SuggestedModule
-                                      : 0,
-                            /*SkipCache*/ true);
-        }
-      }
+      if (Callbacks->FileNotFound(HashLoc, Filename, RecoveryPath))
+        File = FileMgr.getFile(RecoveryPath, /*openFile=*/true);
     }
 
     if (!SuggestedModule || !getLangOpts().Modules) {

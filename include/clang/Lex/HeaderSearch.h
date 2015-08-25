@@ -168,7 +168,6 @@ class HeaderSearch {
   std::vector<DirectoryLookup> SearchDirs;
   unsigned AngledDirIdx;
   unsigned SystemDirIdx;
-  unsigned AdditionalDirIdx;
   bool NoCurDirSearch;
 
   /// \brief \#include prefixes for which the 'system header' property is
@@ -260,14 +259,8 @@ public:
     SearchDirs = dirs;
     AngledDirIdx = angledDirIdx;
     SystemDirIdx = systemDirIdx;
-    AdditionalDirIdx = dirs.size();
     NoCurDirSearch = noCurDirSearch;
     //LookupFileCache.clear();
-  }
-
-  /// \brief Add an additional search path.
-  void AddSearchPath(const DirectoryLookup &dir) {
-    SearchDirs.push_back(dir);
   }
 
   /// \brief Set the list of system header prefixes.
@@ -370,8 +363,7 @@ public:
                               const FileEntry *CurFileEnt,
                               SmallVectorImpl<char> *SearchPath,
                               SmallVectorImpl<char> *RelativePath,
-                              ModuleMap::KnownHeader *SuggestedModule,
-                              bool SkipCache = false);
+                              ModuleMap::KnownHeader *SuggestedModule);
 
   /// \brief Look up a subframework for the specified \#include file.
   ///
@@ -575,9 +567,7 @@ public:
   search_dir_iterator system_dir_begin() const {
     return SearchDirs.begin() + SystemDirIdx;
   }
-  search_dir_iterator system_dir_end() const {
-    return SearchDirs.end() + AdditionalDirIdx;
-  }
+  search_dir_iterator system_dir_end() const { return SearchDirs.end(); }
 
   /// \brief Retrieve a uniqued framework name.
   StringRef getUniqueFrameworkName(StringRef Framework);

@@ -336,7 +336,7 @@ bool InclusionRewriter::HandleHasInclude(
   const DirectoryLookup *CurDir;
   const FileEntry *File = PP.getHeaderSearchInfo().LookupFile(
       Filename, isAngled, 0, CurDir,
-      PP.getSourceManager().getFileEntryForID(FileId), 0, 0, 0, false);
+      PP.getSourceManager().getFileEntryForID(FileId), 0, 0, 0);
 
   FileExists = File != 0;
   return true;
