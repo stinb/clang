@@ -313,6 +313,11 @@ bool Preprocessor::HandleMacroExpandedIdentifier(Token &Identifier,
     // a macro context.
     Identifier.setFlag(Token::LeadingEmptyMacro);
     PropagateLineStartLeadingSpaceInfo(Identifier);
+
+    // Notify callbacks of the empty expansion.
+    if (Callbacks)
+      Callbacks->MacroExpansionFinished(MI);
+
     ++NumFastMacroExpanded;
     return false;
   } else if (MI->getNumTokens() == 1 &&
@@ -360,7 +365,7 @@ bool Preprocessor::HandleMacroExpandedIdentifier(Token &Identifier,
     // Notify callbacks of the single token expansion.
     if (Callbacks) {
       Callbacks->MacroTokenExpanded(Identifier);
-      Callbacks->MacroExpansionFinished();
+      Callbacks->MacroExpansionFinished(MI);
     }
 
     // Since this is not an identifier token, it can't be macro expanded, so

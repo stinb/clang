@@ -29,6 +29,7 @@ namespace clang {
   class IdentifierInfo;
   class MacroDirective;
   class MacroArgs;
+  class MacroInfo;
 
 /// \brief This interface provides a way to observe the actions of the
 /// preprocessor as it does its thing.
@@ -323,7 +324,7 @@ public:
   }
 
   /// Called when a macro expansion finishes.
-  virtual void MacroExpansionFinished() {
+  virtual void MacroExpansionFinished(const MacroInfo *MI) {
   }
 };
 

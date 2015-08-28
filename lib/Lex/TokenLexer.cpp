@@ -425,7 +425,7 @@ bool TokenLexer::Lex(Token &Tok, PPCallbacks *Callbacks, bool InMacroArgs) {
 
     // Notify callbacks of the end of the macro expansion.
     if (Callbacks && Macro)
-      Callbacks->MacroExpansionFinished();
+      Callbacks->MacroExpansionFinished(Macro);
 
     Tok.startToken();
     Tok.setFlagValue(Token::StartOfLine , AtStartOfLine);
