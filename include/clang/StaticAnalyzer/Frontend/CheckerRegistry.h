@@ -199,6 +199,10 @@ public:
   void printHelp(raw_ostream &out, size_t maxNameChars = 30) const;
   void printList(raw_ostream &out) const;
 
+  typedef CheckerInfoList::const_iterator info_const_iterator;
+  info_const_iterator info_begin() const { return Checkers.begin(); }
+  info_const_iterator info_end() const { return Checkers.end(); }
+
 private:
   /// Collect all enabled checkers. The returned container preserves the order
   /// of insertion, as dependencies have to be enabled before the checkers that
