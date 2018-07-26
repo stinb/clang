@@ -74,6 +74,9 @@ bool Preprocessor::EnterSourceFile(FileID FID, const DirectoryLookup *CurDir,
   if (MaxIncludeStackDepth < IncludeMacroStack.size())
     MaxIncludeStackDepth = IncludeMacroStack.size();
 
+  if (Callbacks)
+    Callbacks->EnterSourceFile(FID);
+
   // Get the MemoryBuffer for this FID, if it fails, we fail.
   bool Invalid = false;
   const llvm::MemoryBuffer *InputFile =

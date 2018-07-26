@@ -41,6 +41,10 @@ public:
     EnterFile, ExitFile, SystemHeaderPragma, RenameFile
   };
 
+  /// Called before the source buffer is read.
+  virtual void EnterSourceFile(FileID FID) {
+  }
+
   /// Callback invoked whenever a source file is entered or exited.
   ///
   /// \param Loc Indicates the new location.
