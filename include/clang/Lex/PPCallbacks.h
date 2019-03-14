@@ -369,6 +369,11 @@ public:
                      std::unique_ptr<PPCallbacks> _Second)
     : First(std::move(_First)), Second(std::move(_Second)) {}
 
+  void EnterSourceFile(FileID FID) override {
+    First->EnterSourceFile(FID);
+    Second->EnterSourceFile(FID);
+  }
+
   void FileChanged(SourceLocation Loc, FileChangeReason Reason,
                    SrcMgr::CharacteristicKind FileType,
                    FileID PrevFID) override {
