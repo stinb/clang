@@ -577,6 +577,18 @@ public:
     First->Endif(Loc, IfLoc);
     Second->Endif(Loc, IfLoc);
   }
+
+  /// Called when a new token is expanded from a macro.
+  void MacroTokenExpanded(const Token &Tok) override {
+    First->MacroTokenExpanded(Tok);
+    Second->MacroTokenExpanded(Tok);
+  }
+
+  /// Called when a macro expansion finishes.
+  void MacroExpansionFinished(const MacroInfo *MI) override {
+    First->MacroExpansionFinished(MI);
+    Second->MacroExpansionFinished(MI);
+  }
 };
 
 }  // end namespace clang
