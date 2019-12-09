@@ -892,7 +892,7 @@ bool CompilerInstance::InitializeSourceManager(
 
 // High-Level Operations
 
-bool CompilerInstance::ExecuteAction(FrontendAction &Act) {
+bool CompilerInstance::ExecuteAction(FrontendAction &Act, TargetInfo *Target) {
   assert(hasDiagnostics() && "Diagnostics engine is not initialized!");
   assert(!getFrontendOpts().ShowHelp && "Client must handle '-help'!");
   assert(!getFrontendOpts().ShowVersion && "Client must handle '-version'!");
@@ -905,8 +905,9 @@ bool CompilerInstance::ExecuteAction(FrontendAction &Act) {
     return false;
 
   // Create the target instance.
-  setTarget(TargetInfo::CreateTargetInfo(getDiagnostics(),
-                                         getInvocation().TargetOpts));
+  setTarget(Target ? Target :
+      TargetInfo::CreateTargetInfo(getDiagnostics(),
+                                   getInvocation().TargetOpts));
   if (!hasTarget())
     return false;
 
